@@ -213,7 +213,7 @@ export class GestureController {
           this.host.choose(open.target, hit.id)
           picker.close()
         }
-      } else if (hit.kind !== 'panel') picker.close()
+      } else picker.close()
       return { type: 'spent' }
     }
     if (p.kind === 'hand' && this.host.pressUi(p.pos)) return { type: 'spent' }

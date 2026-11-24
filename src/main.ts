@@ -8,6 +8,8 @@ import { renderFrame, type HandView } from './render/renderer.ts'
 import { HandTracker, type HandEvents } from './tracking/hands.ts'
 import { Tracker } from './tracking/landmarker.ts'
 import { updateHandHover } from './ui/hand-press.ts'
+import { PickerAim } from './ui/picker-aim.ts'
+import type { HandAim } from './ui/picker.ts'
 import { setHint } from './ui/messages.ts'
 
 /** Boot: wires input (camera hands, mouse) → gestures and plucking, and runs the frame loop. */
@@ -27,6 +29,8 @@ mountFeatures(ctx)
 
 const tracker = new Tracker(byId('cam', HTMLVideoElement))
 const hands = new HandTracker()
+/** Each hand's one picker aim point (hover and pick), fed every tracker frame. */
+const aims = new PickerAim()
 const mouse = { pos: null as Vec | null, down: false }
 
 // ── layout: the stage keeps its aspect ratio, letterboxed, drawn at device resolution ──
@@ -56,7 +60,9 @@ const handPointer = (id: number, pos: Vec): { id: string; kind: 'hand'; pos: Vec
 const handEvents: HandEvents = {
   pinchDown: (h) => {
     ctx.strings.forget(`h${h.id}-`)
-    ctx.gestures.pinchStart(handPointer(h.id, h.cursor))
+    // In the picker, a pinch counts where the hand aimed before it closed (closing moves the point).
+    const pos = ctx.picker.open ? (aims.latched(`h${h.id}`, ctx.now()) ?? h.cursor) : h.cursor
+    ctx.gestures.pinchStart(handPointer(h.id, pos))
   },
   pinchMove: (h) => {
     ctx.gestures.pinchMove(handPointer(h.id, h.cursor))
@@ -176,7 +182,11 @@ function step(t: number, dt: number): void {
   const sens = ctx.settings.state.pinchSensitivity
   if (input === 'camera') {
     const dets = tracker.detect(t, ctx.stage.state)
-    if (dets) hands.update(dets, t, sens, handEvents)
+    if (dets) {
+      hands.update(dets, t, sens, handEvents)
+      for (const h of hands.hands) aims.feed(`h${h.id}`, t, h.cursor, h.ratio)
+      aims.retain(hands.hands.map((h) => `h${h.id}`))
+    }
   }
   if (input !== 'idle' && !ctx.picker.open) pluckAll(t)
   ctx.strings.update(t)
@@ -199,16 +209,19 @@ function pluckAll(t: number): void {
   if (mouse.pos && !mouse.down) ctx.strings.feed('mouse', mouse.pos)
 }
 
-/** Pointing: the picker highlights (and auditions) what's pointed at; HTML buttons light up. */
+/** Pointing: the picker highlights (and auditions) what each hand aims at; HTML buttons light up. */
 function point(t: number): Vec[] {
   const pointing: Vec[] = []
+  const handAims: HandAim[] = []
   for (const h of hands.hands) {
     const tip = h.landmarks[8]
     if (tip) pointing.push(tip)
     if (h.pinch.pinching) pointing.push(h.cursor)
+    const aim = aims.aim(`h${h.id}`) ?? h.cursor
+    handAims.push({ aim, latched: aims.latched(`h${h.id}`, t) ?? aim })
   }
   const others = mouse.pos ? [mouse.pos] : []
-  const fresh = ctx.picker.updateHover(pointing, others, t)
+  const fresh = ctx.picker.updateHover(handAims, others, t)
   pointing.push(...others)
   if (fresh && t - (ctx.picker.open?.openedAt ?? t) > 0.3) ctx.previewInstrument(fresh)
   updateHandHover(hands.hands.map((h) => ctx.toClient(h.cursor)))
@@ -220,6 +233,7 @@ function draw(t: number, dt: number, pointing: Vec[]): void {
   const handViews: HandView[] = hands.hands.map((h) => ({
     landmarks: h.landmarks,
     cursor: h.cursor,
+    aim: ctx.picker.open ? (aims.aim(`h${h.id}`) ?? h.cursor) : null,
     ratio: h.ratio,
     pinching: h.pinch.pinching,
   }))

@@ -18,15 +18,16 @@ describe('DoublePinch', () => {
     expect(d.armed).toEqual({ tile: 'harp', at: 1 })
   })
 
-  it('ignores a second pinch 199 ms after the first, and keeps the arm', () => {
+  it('ignores a second pinch 119 ms after the first, and keeps the arm', () => {
+    // Another hand, so the release-jitter guard doesn't decide it.
     const d = armedAt(1)
-    expect(d.pinch('h1', 'harp', 1 + ms(199))).toBe('ignored')
+    expect(d.pinch('h2', 'harp', 1 + ms(119))).toBe('ignored')
     expect(d.armed).toEqual({ tile: 'harp', at: 1 })
   })
 
-  it('chooses at exactly 200 ms and at exactly 800 ms', () => {
-    expect(armedAt(1).pinch('h1', 'harp', 1 + ms(200))).toBe('chosen')
-    expect(armedAt(1.1).pinch('h1', 'harp', 1.1 + ms(800))).toBe('chosen')
+  it('chooses at exactly 120 ms and at exactly 1,200 ms', () => {
+    expect(armedAt(1).pinch('h2', 'harp', 1 + ms(120))).toBe('chosen')
+    expect(armedAt(1.1).pinch('h1', 'harp', 1.1 + ms(1200))).toBe('chosen')
   })
 
   it('clears the arm once chosen', () => {
@@ -35,10 +36,10 @@ describe('DoublePinch', () => {
     expect(d.armed).toBeNull()
   })
 
-  it('re-arms (does not choose) 801 ms after the first', () => {
+  it('re-arms (does not choose) 1,201 ms after the first', () => {
     const d = armedAt(1)
-    expect(d.pinch('h1', 'harp', 1 + ms(801))).toBe('armed')
-    expect(d.armed).toEqual({ tile: 'harp', at: 1 + ms(801) })
+    expect(d.pinch('h1', 'harp', 1 + ms(1201))).toBe('armed')
+    expect(d.armed).toEqual({ tile: 'harp', at: 1 + ms(1201) })
   })
 
   it('re-arms on a different tile instead of choosing', () => {
@@ -68,10 +69,10 @@ describe('DoublePinch', () => {
     expect(d.pinch('h1', 'harp', 1.3)).toBe('chosen')
   })
 
-  it('expires the arm after 800 ms', () => {
+  it('expires the arm after 1,200 ms', () => {
     const d = armedAt(1)
-    expect(d.update(1 + ms(800), [])).toEqual({ tile: 'harp', at: 1 })
-    expect(d.update(1 + ms(801), [])).toBeNull()
+    expect(d.update(1 + ms(1200), [])).toEqual({ tile: 'harp', at: 1 })
+    expect(d.update(1 + ms(1201), [])).toBeNull()
   })
 
   it('clears the arm when a hand moves onto another tile', () => {

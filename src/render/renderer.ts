@@ -8,7 +8,7 @@ import type { OpenPicker } from '../ui/picker.ts'
 import type { Effects } from './effects.ts'
 import { drawIcon } from './icons.ts'
 import { drawPicker } from './picker.ts'
-import { AMBER, hexA, IVORY, label, TAU } from './style.ts'
+import { AMBER, hexA, INK, IVORY, label, TAU } from './style.ts'
 
 /**
  * Draws one frame of the stage on the canvas, in stage units (the canvas transform maps them to
@@ -43,6 +43,8 @@ const HAND_BONES = [
 export interface HandView {
   readonly landmarks: readonly Vec[]
   readonly cursor: Vec
+  /** While the picker is open: the hand's one aim point (`ui/picker-aim.ts`), drawn as its cursor. */
+  readonly aim: Vec | null
   /** Thumb–index gap relative to hand size: drives the closing pinch ring. */
   readonly ratio: number
   readonly pinching: boolean
@@ -367,7 +369,8 @@ function drawHands(g: CanvasRenderingContext2D, f: FrameView): void {
         g.fill()
       }
     }
-    if (!h.pinching) {
+    // In the picker only the aim point counts, so the fingertip rings would just mislead.
+    if (!h.pinching && !h.aim) {
       g.strokeStyle = IVORY
       g.lineWidth = 2
       for (const k of tips) {
@@ -383,14 +386,24 @@ function drawHands(g: CanvasRenderingContext2D, f: FrameView): void {
     const r = lerp(17, 7, k)
     g.strokeStyle = h.pinching ? '#ffc24a' : 'rgba(255,194,74,0.75)'
     g.lineWidth = h.pinching ? 3 : 1.6
+    const c = h.aim ?? h.cursor
     g.beginPath()
-    g.arc(h.cursor.x, h.cursor.y, r, 0, TAU)
+    g.arc(c.x, c.y, r, 0, TAU)
     g.stroke()
     if (h.pinching) {
       g.fillStyle = '#ffc24a'
       g.beginPath()
-      g.arc(h.cursor.x, h.cursor.y, 5, 0, TAU)
+      g.arc(c.x, c.y, 5, 0, TAU)
       g.fill()
+    } else if (h.aim) {
+      // The picker cursor: a small dot exactly where hover and pick are measured.
+      g.fillStyle = IVORY
+      g.strokeStyle = INK
+      g.lineWidth = 1.5
+      g.beginPath()
+      g.arc(c.x, c.y, 3.5, 0, TAU)
+      g.fill()
+      g.stroke()
     }
   }
 }

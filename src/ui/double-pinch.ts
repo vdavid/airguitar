@@ -12,11 +12,11 @@
  * Times are seconds on one clock (`AppContext.now`). The mouse doesn't use this: a click picks.
  */
 
-export const DOUBLE_PINCH_MIN = 0.2
-export const DOUBLE_PINCH_MAX = 0.8
+export const DOUBLE_PINCH_MIN = 0.12
+export const DOUBLE_PINCH_MAX = 1.2
 /** A hand must stay open this long between its two pinches; a shorter gap is tracking jitter. */
 export const MIN_RELEASE = 0.1
-/** Float slack so 0.2 s and 0.8 s land inside the window on any clock value. */
+/** Float slack so 0.12 s and 1.2 s land inside the window on any clock value. */
 const EPS = 1e-6
 
 export interface Armed<T> {
