@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Air guitar</title>
+    <meta name="description" content="Stretch strings in the air with your hands and play them with your fingertips." />
+    <meta name="theme-color" content="#0b0d11" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <video id="cam" playsinline muted></video>
+    <div id="stage-wrap"><canvas id="stage"></canvas></div>
+
+    <header id="top" class="bar"></header>
+    <div id="hint" aria-live="polite"></div>
+    <div id="toast" role="status"></div>
+
+    <div id="start-modal" class="modal open">
+      <div class="card">
+        <h1>Air <b>guitar</b></h1>
+        <p class="small credit">
+          Based on
+          <a href="https://hashem-al-ghaili.github.io/music-maker/" target="_blank" rel="noopener">Music Maker</a>
+          by Hashem Al-Ghaili.
+        </p>
+        <p>Stretch strings in the air and play them with your fingertips.</p>
+        <ol class="steps">
+          <li>
+            <span class="n">1</span
+            ><span><b>Stretch.</b> Pinch thumb to index finger on both hands, pull your hands apart, then let go.</span>
+          </li>
+          <li>
+            <span class="n">2</span
+            ><span
+              ><b>Shape.</b> Pinch an end to move it. Shorter strings sound higher. Drop an end on the other end to
+              remove the string. Pinch the middle to pick its instrument.</span
+            >
+          </li>
+          <li>
+            <span class="n">3</span
+            ><span
+              ><b>Play.</b> Sweep a fingertip across a string. Switch to Play mode so nothing moves by accident.</span
+            >
+          </li>
+        </ol>
+        <div class="actions">
+          <button id="start-camera" class="primary" type="button">Start camera</button>
+          <button id="start-mouse" type="button">Play with the mouse instead</button>
+        </div>
+        <div id="start-status" aria-live="polite"></div>
+        <p class="small">
+          Up to eight hands can play at once. Sit 40 to 80 cm from the camera with light on your hands. The hand tracker
+          loads from the internet the first time.
+        </p>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

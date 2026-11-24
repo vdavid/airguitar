@@ -1,0 +1,46 @@
+import type { InstrumentId } from './catalog.ts'
+
+/** Everything an instrument needs to make sound, handed in by the engine. */
+export interface InstrumentContext {
+  readonly ctx: BaseAudioContext
+  /**
+   * This instrument's input on the mix (its own gain, tone shaping, and reverb send are behind
+   * it). Connect voices here.
+   */
+  readonly out: AudioNode
+  /** Two seconds of white noise, for breath, bow hair, and drum sounds. */
+  readonly noise: AudioBuffer
+}
+
+export interface NoteRequest {
+  /** MIDI pitch; fractional for the "Free" tone. */
+  readonly midi: number
+  /** 0..1 */
+  readonly velocity: number
+  /** -1 (left) .. 1 (right). */
+  readonly pan: number
+  /** Audio-clock start time. Defaults to now. */
+  readonly when?: number
+  /**
+   * For sustaining instruments: keep sounding until `release()` (a rest-finger hold). Otherwise
+   * a note plays its natural length.
+   */
+  readonly held?: boolean
+}
+
+/** A sounding note. Every method is safe to call after the note has died away. */
+export interface Voice {
+  /** Retunes the note (the string got longer or shorter while ringing). */
+  setPitch(midi: number): void
+  /** Bends relative to the current pitch, in cents (pinch-bend). 0 returns to pitch. */
+  bend(cents: number): void
+  /** Stops it with a short fade. */
+  release(): void
+  /** Audio-clock time when the note will have died away by itself. */
+  readonly endsAt: number
+}
+
+export interface Instrument {
+  readonly id: InstrumentId
+  play(context: InstrumentContext, note: NoteRequest): Voice
+}

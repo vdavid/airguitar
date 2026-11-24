@@ -1,0 +1,452 @@
+/* Music Maker's look: dark ink, ivory text, amber accent, Avenir Next. Dark theme only. */
+:root {
+  --ink: #0b0d11;
+  --panel: rgba(11, 13, 17, 0.9);
+  --line: rgba(251, 246, 233, 0.16);
+  --text: #f3efe6;
+  --mute: rgba(243, 239, 230, 0.62);
+  --amber: #ffc24a;
+  --red: #ff5a4f;
+  --mint: #8ff0c0;
+  --font: 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  overflow: hidden;
+}
+
+a {
+  color: var(--amber);
+}
+
+#cam {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+#stage-wrap {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #000;
+}
+
+#stage {
+  display: block;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+/* The one top bar. */
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  background: var(--panel);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+}
+
+#top {
+  top: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.bar-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 13px;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+.brand b {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  height: 40px;
+  padding: 0 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    transform 0.08s;
+}
+
+button:hover {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+button.hand-hover {
+  background: rgba(255, 194, 74, 0.22);
+  border-color: var(--amber);
+  box-shadow: 0 0 0 2px var(--amber);
+}
+
+button.sq {
+  width: 40px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* Build / Play */
+.segmented {
+  display: inline-flex;
+}
+
+.segmented button {
+  border-radius: 0;
+}
+
+.segmented button:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.segmented button:last-child {
+  border-radius: 0 10px 10px 0;
+  border-left: 0;
+}
+
+.segmented button[aria-checked='true'] {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--ink);
+}
+
+.instrument-btn {
+  width: 40px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* Dropdowns */
+.dropdown {
+  position: relative;
+}
+
+.dd-button {
+  padding: 0 10px 0 12px;
+  gap: 6px;
+}
+
+.dd-value {
+  min-width: 22px;
+  text-align: left;
+}
+
+.dd-button svg:last-child {
+  opacity: 0.6;
+}
+
+.dd-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10;
+  min-width: 180px;
+  background: #12151b;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.dd-panel[hidden] {
+  /* Beats `.dd-grid`, which sets display too. */
+  display: none !important;
+}
+
+.dd-panel.dd-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 48px);
+  min-width: 0;
+}
+
+.dd-item {
+  justify-content: flex-start;
+  background: transparent;
+  border-color: transparent;
+}
+
+.dd-grid .dd-item {
+  justify-content: center;
+  padding: 0;
+}
+
+.dd-item[aria-checked='true'] {
+  background: rgba(255, 194, 74, 0.16);
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.dd-check[aria-checked='true'] {
+  color: var(--text);
+  background: transparent;
+  border-color: transparent;
+}
+
+.dd-box {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1.5px solid var(--line);
+  display: inline-grid;
+  place-items: center;
+}
+
+.dd-box svg {
+  visibility: hidden;
+}
+
+.dd-check[aria-checked='true'] .dd-box {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--ink);
+}
+
+.dd-check[aria-checked='true'] .dd-box svg {
+  visibility: visible;
+}
+
+/* Hint and toast */
+#hint {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 24px;
+  z-index: 4;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+  max-width: 92vw;
+  text-align: center;
+}
+
+#hint.show {
+  opacity: 1;
+}
+
+#toast {
+  position: fixed;
+  left: 50%;
+  top: 76px;
+  transform: translateX(-50%);
+  z-index: 30;
+  background: var(--amber);
+  color: var(--ink);
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 10px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  max-width: 90vw;
+  text-align: center;
+}
+
+#toast.show {
+  opacity: 1;
+}
+
+/* Dialogs */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  place-items: center;
+  background: rgba(4, 5, 8, 0.72);
+  padding: 20px;
+}
+
+.modal.open {
+  display: grid;
+}
+
+.card {
+  background: #12151b;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 26px 28px;
+  width: min(640px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+}
+
+.card h1 {
+  margin: 0 0 4px;
+  font-size: 30px;
+  letter-spacing: 0.02em;
+}
+
+.card h1 b {
+  color: var(--amber);
+}
+
+.card h2 {
+  margin: 0 0 14px;
+  font-size: 20px;
+}
+
+.card h3 {
+  margin: 18px 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+
+.card p {
+  margin: 0 0 12px;
+  color: var(--mute);
+  line-height: 1.5;
+}
+
+.card .actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.primary {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--ink);
+  height: 46px;
+  padding: 0 20px;
+  font-size: 15px;
+}
+
+.primary:hover {
+  background: #ffd27a;
+}
+
+.steps {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 6px;
+  display: grid;
+  gap: 10px;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 30px 1fr;
+  gap: 12px;
+  align-items: start;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.steps .n {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid var(--amber);
+  color: var(--amber);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.small {
+  font-size: 12.5px;
+  color: var(--mute);
+}
+
+.card .credit {
+  margin-bottom: 10px;
+}
+
+#start-status {
+  min-height: 20px;
+  margin-top: 12px;
+  color: var(--amber);
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .brand {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
