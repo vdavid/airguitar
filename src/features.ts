@@ -6,6 +6,7 @@ import { mountCoreControls } from './ui/core-controls.ts'
 import { mountHelp } from './help/dialog.ts'
 import { mountSettings } from './settings/dialog.ts'
 import { mountSetups } from './setups/dialog.ts'
+import { mountSound } from './sound/controls.ts'
 
 /**
  * Every feature mounts itself here, one line each, in top bar order. A feature gets the shared
@@ -22,6 +23,7 @@ export function mountFeatures(ctx: AppContext): void {
     },
   })
   mountExpression(ctx)
+  mountSound(ctx)
   mountBeats(ctx)
   mountRecording(ctx)
   mountSetups(ctx)

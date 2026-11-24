@@ -17,6 +17,8 @@ export const RANGES = {
   pinchSensitivity: { min: 0.6, max: 1.7, step: 0.05 },
   cameraDim: { min: 0, max: 0.7, step: 0.02 },
   volume: { min: 0, max: 1, step: 0.02 },
+  brightness: { min: 0, max: 1, step: 0.02 },
+  echo: { min: 0, max: 1, step: 0.02 },
 } as const satisfies Partial<Record<keyof Settings, Range>>
 
 type NumberKey = keyof typeof RANGES

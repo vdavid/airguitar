@@ -8,7 +8,7 @@ import type { OpenPicker } from '../ui/picker.ts'
 import type { Effects } from './effects.ts'
 import { drawIcon } from './icons.ts'
 import { drawPicker } from './picker.ts'
-import { AMBER, hexA, IVORY, label, TAU } from './style.ts'
+import { hexA, IVORY, label, TAU } from './style.ts'
 
 /**
  * Draws one frame of the stage on the canvas, in stage units (the canvas transform maps them to
@@ -85,7 +85,6 @@ export function renderFrame(g: CanvasRenderingContext2D, f: FrameView): void {
   if (f.picker) drawPicker(g, f.picker, f.t, f.pickerCurrent)
   drawHands(g, f)
   drawRipples(g, f)
-  drawSweep(g, f)
   f.debugLines.forEach((line, i) => {
     label(g, line, 16, f.safeTop + 18 + i * 18, 12, '#8ff0c0', 'left', 500)
   })
@@ -388,48 +387,4 @@ function drawRipples(g: CanvasRenderingContext2D, f: FrameView): void {
     g.arc(r.x, r.y, 10 + 34 * k, 0, TAU)
     g.stroke()
   }
-}
-
-/** The air sweep: a crosshair at the pinch's start, a line to the pinch, and what each way does. */
-function drawSweep(g: CanvasRenderingContext2D, f: FrameView): void {
-  const sw = f.effects.sweep
-  if (!sw) return
-  const { from: o, to: p } = sw
-  const R = 240
-  const { width: W, height: H } = f.stage
-  g.save()
-  g.strokeStyle = 'rgba(251,246,233,0.35)'
-  g.lineWidth = 1.2
-  g.setLineDash([4, 6])
-  g.beginPath()
-  g.moveTo(o.x, o.y - R)
-  g.lineTo(o.x, o.y + R)
-  g.moveTo(o.x - R, o.y)
-  g.lineTo(o.x + R, o.y)
-  g.stroke()
-  g.setLineDash([])
-  g.strokeStyle = AMBER
-  g.lineWidth = 2.5
-  g.beginPath()
-  g.moveTo(o.x, o.y)
-  g.lineTo(p.x, p.y)
-  g.stroke()
-  g.beginPath()
-  g.arc(o.x, o.y, 6, 0, TAU)
-  g.stroke()
-  g.restore()
-  const on = (v: number): string => (v > 0.02 ? AMBER : 'rgba(251,246,233,0.75)')
-  const pct = (v: number): string => (v > 0.02 ? ` ${Math.round(v * 100)}%` : '')
-  label(g, `Thin${pct(sw.thin)}`, o.x, clamp(o.y - R - 14, f.safeTop + 14, H), 12, on(sw.thin), 'center', 700)
-  label(g, `Dark${pct(sw.dark)}`, o.x, clamp(o.y + R + 14, 0, H - 14), 12, on(sw.dark), 'center', 700)
-  label(
-    g,
-    `Echo${pct(sw.echo)}`,
-    clamp(o.x + (p.x >= o.x ? R : -R), 46, W - 46),
-    o.y - 14,
-    12,
-    on(sw.echo),
-    'center',
-    700,
-  )
 }

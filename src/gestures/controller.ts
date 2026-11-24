@@ -27,7 +27,7 @@ import { allows } from './mode.ts'
  * 4. Build: a string's middle → open the instrument picker for it.
  * 5. Play: a string's body → offered to the expression handler (bend).
  * 6. Empty air. Build: hands pair up (the nearest other waiting hand) and stretch a new string
- *    between them; the mouse drags one out. Play: offered to the expression handler (air sweep).
+ *    between them; the mouse drags one out. Play: nothing.
  *
  * Nothing here depends on timing or holding still.
  */
@@ -207,7 +207,6 @@ export class GestureController {
     }
     if (allows(mode, 'create-string'))
       return p.kind === 'mouse' ? { type: 'create-mouse', from: p.pos } : this.pairUp(p)
-    if (allows(mode, 'air-sweep') && this.expression.pinchAir(p)) return { type: 'expression' }
     return { type: 'spent' }
   }
 

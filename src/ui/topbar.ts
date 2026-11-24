@@ -3,7 +3,7 @@
  * features don't edit each other's code:
  *
  * - `start` slot (left): brand 0, Build/Play 10, key 20, tone 30, new-string instrument 40.
- * - `end` slot (right): beats 100–199, recording 200–299, setups/help/settings 300–399.
+ * - `end` slot (right): sound 50, beats 100–199, recording 200–299, setups/help/settings 300–399.
  *
  * Use `iconButton` and the dropdowns in `dropdown.ts` for a consistent look: SVG icons with an
  * `aria-label` and a tooltip, no text labels (the bar has to fit on one line).

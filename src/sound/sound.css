@@ -1,0 +1,37 @@
+/* The sound panel (Tone and Echo) in the top bar. */
+.sound {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 4px;
+}
+
+.sound-head,
+.sound-ends {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.sound-head {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.sound-value {
+  color: var(--mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.sound-ends {
+  margin-top: 2px;
+  padding: 0 52px;
+  color: var(--mute);
+  font-size: 12px;
+}
+
+.dd-button.sound-on {
+  color: var(--amber);
+  border-color: var(--amber);
+}

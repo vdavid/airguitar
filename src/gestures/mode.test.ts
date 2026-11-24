@@ -16,7 +16,5 @@ describe('mode rules', () => {
 
   it('keeps expression gestures in Play', () => {
     expect(allows('play', 'bend-string')).toBe(true)
-    expect(allows('play', 'air-sweep')).toBe(true)
-    expect(allows('build', 'air-sweep')).toBe(false)
   })
 })

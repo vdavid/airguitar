@@ -24,7 +24,7 @@ export interface AppContext {
   readonly app: AppStore
   readonly settings: SettingsStore
   readonly audio: AudioEngine
-  /** The backing beat. Its `state.bpm` is the session tempo (the sweep echo follows it). */
+  /** The backing beat. Its `state.bpm` is the session tempo (the Echo follows it). */
   readonly beats: BeatPlayer
   readonly topBar: TopBar
   readonly gestures: GestureController
@@ -58,9 +58,14 @@ export function createApp(canvas: HTMLCanvasElement, top: HTMLElement): AppConte
   const strings = new StringPlayer(stage, audio, effects, now)
   const beats = new BeatPlayer(audio, stage)
 
+  const applyColor = (): void => {
+    audio.setColor(settings.state.brightness, settings.state.echo, beats.state.bpm)
+  }
   settings.changes.subscribe((s) => {
     audio.setVolume(s.volume)
+    applyColor()
   })
+  beats.changes.subscribe(applyColor)
 
   const toClient = (p: Vec): Vec => {
     const r = canvas.getBoundingClientRect()

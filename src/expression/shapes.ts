@@ -1,6 +1,6 @@
 import { clamp, type Vec } from '../geom.ts'
 
-/** The pure geometry behind the expression gestures: how far a pull bends, how far a sweep goes. */
+/** The pure geometry behind the expression gestures: how far a pull bends, how hard it snaps. */
 
 /** A pull this far (stage units) from the string is the most it bends. */
 export const PULL_MAX = 90
@@ -36,24 +36,4 @@ export function pullString(a: Vec, b: Vec, u: number, p: Vec): Pull {
 /** How hard a let-go pull plucks: 0.35 for a shallow snap, 1 at a full pull. */
 export function snapVelocity(depth: number): number {
   return clamp(0.35 + (depth / PULL_MAX) * 0.65, 0.35, 1)
-}
-
-export interface SweepAmounts {
-  /** 0..1: dragging down darkens (lowers the lowpass). */
-  readonly dark: number
-  /** 0..1: dragging up thins (raises the highpass). */
-  readonly thin: number
-  /** 0..1: dragging sideways, either way, adds echo. */
-  readonly echo: number
-}
-
-/** The air sweep (Music Maker's air pad): how far the pinch moved from where it started. */
-export function sweepAmounts(from: Vec, to: Vec): SweepAmounts {
-  const dy = to.y - from.y
-  const dx = Math.abs(to.x - from.x)
-  return {
-    dark: clamp((dy - 20) / 240, 0, 1),
-    thin: clamp((-dy - 20) / 240, 0, 1),
-    echo: clamp((dx - 30) / 260, 0, 1),
-  }
 }

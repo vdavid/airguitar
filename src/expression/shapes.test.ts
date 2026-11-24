@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BEND_CENTS, PULL_MAX, pullString, snapVelocity, sweepAmounts } from './shapes.ts'
+import { BEND_CENTS, PULL_MAX, pullString, snapVelocity } from './shapes.ts'
 
 describe('pullString', () => {
   const a = { x: 100, y: 300 }
@@ -24,21 +24,5 @@ describe('pullString', () => {
   it('snaps harder the deeper the pull', () => {
     expect(snapVelocity(14)).toBeLessThan(snapVelocity(60))
     expect(snapVelocity(PULL_MAX)).toBe(1)
-  })
-})
-
-describe('sweepAmounts', () => {
-  const o = { x: 600, y: 400 }
-
-  it('is neutral near the start', () => {
-    expect(sweepAmounts(o, { x: 610, y: 410 })).toEqual({ dark: 0, thin: 0, echo: 0 })
-  })
-
-  it('darkens down, thins up, and echoes sideways', () => {
-    expect(sweepAmounts(o, { x: 600, y: 700 }).dark).toBe(1)
-    expect(sweepAmounts(o, { x: 600, y: 100 }).thin).toBe(1)
-    const side = sweepAmounts(o, { x: 300, y: 400 })
-    expect(side.echo).toBe(1)
-    expect(side.dark + side.thin).toBe(0)
   })
 })

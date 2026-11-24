@@ -16,6 +16,10 @@ export interface Settings {
   readonly cameraDim: number
   /** 0..1 master volume. */
   readonly volume: number
+  /** 0..1 Tone in the top bar: the mix lowpass. 1 is fully open (neutral), lower is darker. */
+  readonly brightness: number
+  /** 0..1 Echo in the top bar: a dotted eighth at the beat's tempo. 0 is off. */
+  readonly echo: number
   /** Frame rate and pinch readings, for troubleshooting. */
   readonly debug: boolean
 }
@@ -27,6 +31,8 @@ export const DEFAULT_SETTINGS: Settings = {
   showLabels: true,
   cameraDim: 0.28,
   volume: 0.9,
+  brightness: 1,
+  echo: 0,
   debug: false,
 }
 

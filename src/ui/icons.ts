@@ -25,6 +25,10 @@ export const ICON = {
   help: svg(
     '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.9.7c0 1.7-2.5 2.1-2.5 3.7"/><path d="M12 17.1h.01"/>',
   ),
+  /** Sound (tone and echo): a speaker with waves. */
+  sound: svg(
+    '<path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5Z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18.3 6.3a8 8 0 0 1 0 11.4"/>',
+  ),
   /** Settings: two sliders. */
   settings: svg('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'),
   close: svg('<path d="M6 6 18 18M18 6 6 18"/>', 18),

@@ -13,7 +13,7 @@ const HELP_HTML = `
 <h3>Build and Play</h3>
 <ul>
   <li><b>Build</b> (the hammer): make strings, move their ends, remove them, and pick their instruments. Plucking works here too.</li>
-  <li><b>Play</b> (the hand): play only, so nothing moves by accident. Bend and sweep live here.</li>
+  <li><b>Play</b> (the hand): play only, so nothing moves by accident. Bend lives here.</li>
 </ul>
 <h3>Making strings</h3>
 <ul>
@@ -28,10 +28,10 @@ const HELP_HTML = `
   <li><b>Pluck:</b> sweep an open fingertip across a string. Where you cross it doesn’t matter. Faster sweeps are louder.</li>
   <li><b>Hold a note:</b> rest a fingertip on a string. Bowed, blown, and sung instruments keep sounding while you stay; mallets and drums keep playing.</li>
   <li><b>Bend</b> (Play mode): pinch a string and pull it sideways to bend its note up. Let go and it snaps back, and a big pull plays it.</li>
-  <li><b>Sweep</b> (Play mode): pinch empty air and drag. Down darkens the sound, up thins it, sideways adds echo. Let go and it clears.</li>
 </ul>
 <h3>Beats and recording</h3>
 <ul>
+  <li><b>Sound</b> (the speaker): <b>Tone</b> makes everything darker or brighter, and <b>Echo</b> adds repeats in time with the beat. Pinch − and + to change them; the speaker turns amber while either is on.</li>
   <li><b>Beat</b> (the drum): pick a backing rhythm, or Off. Its bass and chords follow your key and tone. Change the tempo at the bottom of the same menu, and switch parts on or off next to it.</li>
   <li><b>Record</b> (the red dot): pick video with sound or sound only, then press it to start and again to stop. Save the take as a video, MP3, or WAV.</li>
   <li><b>Shape:</b> landscape, or vertical for phones. <b>Stems</b> (the layers) saves each beat part as its own WAV, ready for a music editor.</li>

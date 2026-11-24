@@ -169,12 +169,11 @@ describe('the instrument picker', () => {
 })
 
 describe('expression handler', () => {
-  it('is offered string and air pinches in Play only', () => {
+  it('is offered string pinches in Play only, and never empty air', () => {
     const { ctl, stage, app } = setup()
     stage.addString({ x: 100, y: 300 }, { x: 600, y: 300 })
     const handler = {
       pinchString: vi.fn(() => true),
-      pinchAir: vi.fn(() => true),
       move: vi.fn(),
       release: vi.fn(),
       cancel: vi.fn(),
@@ -191,7 +190,6 @@ describe('expression handler', () => {
     expect(handler.pinchString).toHaveBeenCalledOnce()
     expect(handler.move).toHaveBeenCalledOnce()
     expect(handler.release).toHaveBeenCalledOnce()
-    expect(handler.pinchAir).toHaveBeenCalledOnce()
   })
 
   it('cancels (rather than releases) a pinch that was interrupted', () => {
@@ -199,7 +197,6 @@ describe('expression handler', () => {
     stage.addString({ x: 100, y: 300 }, { x: 600, y: 300 })
     const handler = {
       pinchString: vi.fn(() => true),
-      pinchAir: vi.fn(() => true),
       move: vi.fn(),
       release: vi.fn(),
       cancel: vi.fn(),
@@ -208,7 +205,7 @@ describe('expression handler', () => {
     app.setMode('play')
     ctl.pinchStart(hand('h1', 200, 302))
     ctl.cancel('h1')
-    ctl.pinchStart(hand('h2', 900, 600))
+    ctl.pinchStart(hand('h2', 210, 302))
     // What a mode switch does (app.ts).
     ctl.cancelAll()
     expect(handler.cancel).toHaveBeenCalledTimes(2)

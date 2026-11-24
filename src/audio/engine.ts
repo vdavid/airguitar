@@ -13,6 +13,7 @@ export class AudioEngine {
   private context: AudioContext | null = null
   private mix: MixGraph | null = null
   private volume = 0.9
+  private color = { brightness: 1, echo: 0, bpm: 100 }
 
   /** The live graph, once started. Beats and recording connect here (`beats`, `output`). */
   get graph(): MixGraph | null {
@@ -31,6 +32,7 @@ export class AudioEngine {
     }
     this.context = new AudioContext({ latencyHint: 'interactive' })
     this.mix = createMixGraph(this.context, { volume: this.volume })
+    this.applyColor()
     if (this.context.state !== 'running') void this.context.resume()
     return this.mix
   }
@@ -48,16 +50,21 @@ export class AudioEngine {
   }
 
   /**
-   * The performance sweep: `dark` 0..1 lowers the lowpass, `thin` 0..1 raises the highpass, `echo`
-   * 0..1 opens the echo send. `bpm` sets the echo time to a dotted eighth.
+   * The top bar's sound color: `brightness` 0..1 opens the lowpass (1 = fully open), `echo` 0..1
+   * opens the echo send, and `bpm` sets the echo time to a dotted eighth. Kept until `start()` too.
    */
-  setSweep(dark: number, thin: number, echo: number, bpm = 100): void {
+  setColor(brightness: number, echo: number, bpm: number): void {
+    this.color = { brightness: clamp(brightness, 0, 1), echo: clamp(echo, 0, 1), bpm }
+    this.applyColor()
+  }
+
+  private applyColor(): void {
     const mix = this.mix
     if (!mix) return
+    const { brightness, echo, bpm } = this.color
     const t = mix.ctx.currentTime
-    mix.lowpass.frequency.setTargetAtTime(20000 * Math.pow(0.018, clamp(dark, 0, 1)), t, 0.04)
-    mix.highpass.frequency.setTargetAtTime(20 * Math.pow(90, clamp(thin, 0, 1)), t, 0.04)
-    mix.echoSend.gain.setTargetAtTime(clamp(echo, 0, 1) * 0.75, t, 0.05)
+    mix.lowpass.frequency.setTargetAtTime(20000 * Math.pow(0.018, 1 - brightness), t, 0.04)
+    mix.echoSend.gain.setTargetAtTime(echo * 0.75, t, 0.05)
     mix.echoDelay.delayTime.setTargetAtTime(clamp((60 / bpm) * 0.75, 0.1, 1.5), t, 0.1)
   }
 

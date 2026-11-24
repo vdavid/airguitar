@@ -2,8 +2,9 @@ import { ICON } from './icons.ts'
 
 /**
  * Dropdowns for the top bar. They're built from plain buttons (no native `<select>`), so a hand's
- * pinch can open them and pick an option the same way it presses any button. Two kinds:
- * `selectDropdown` (pick one) and `checklistDropdown` (toggle several).
+ * pinch can open them and pick an option the same way it presses any button. Three kinds:
+ * `selectDropdown` (pick one), `checklistDropdown` (toggle several), and `panelDropdown` (any
+ * controls, for example sliders).
  *
  * An open dropdown closes on Escape, on a press outside it, or on a hand press outside it (the
  * `airguitar:press-outside` event, see `pressAt` in `hand-press.ts`).
@@ -24,7 +25,7 @@ interface Base {
   readonly element: HTMLElement
   readonly button: HTMLButtonElement
   readonly panel: HTMLElement
-  close(): void
+  readonly close: () => void
 }
 
 function base(opts: { icon: string; label: string }): Base {
@@ -198,4 +199,20 @@ export function checklistDropdown<T>(opts: {
       rows.get(value)?.setAttribute('aria-checked', String(checked))
     },
   }
+}
+
+export interface PanelDropdown {
+  readonly element: HTMLElement
+  /** The closed button, for styling it (for example, to show that something is switched on). */
+  readonly button: HTMLButtonElement
+  close(): void
+}
+
+/** An icon button that opens a panel of any controls. Pressing them keeps the panel open. */
+export function panelDropdown(opts: { icon: string; label: string; content: HTMLElement }): PanelDropdown {
+  const b = base(opts)
+  setButtonFace(b.button, opts.icon, '')
+  b.panel.setAttribute('role', 'dialog')
+  b.panel.append(opts.content)
+  return { element: b.element, button: b.button, close: b.close }
 }

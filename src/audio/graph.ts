@@ -12,7 +12,8 @@ import { makeImpulse } from './reverb.ts'
  *   master → highpass → lowpass → compressor → output → destination
  *            └→ echo send → delay (with feedback) → highpass
  *
- * `output` is the final mix: tap it to record. The filters and echo are the performance sweep.
+ * `output` is the final mix: tap it to record. The lowpass and echo are the top bar's Tone and Echo
+ * (`AudioEngine.setColor`); the highpass stays open.
  */
 export interface MixGraph {
   readonly ctx: BaseAudioContext
