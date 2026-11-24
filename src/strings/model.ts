@@ -19,10 +19,12 @@ export const MOUSE_REACH: Reach = { endpoint: 16, middle: 15, body: 7 }
 export const MERGE_RADIUS = 36
 /**
  * Hands make a string only from two empty-air pinches that start this close together (an "armed"
- * pair). Tighter than `MERGE_RADIUS` so making a string is a deliberate gesture: David found
- * pairing by distance anywhere on the stage made strings far too eagerly.
+ * pair), so making a string is a deliberate gesture: pairing by distance anywhere on the stage made
+ * strings far too eagerly. It's wider than `MERGE_RADIUS` on purpose: two real hands can't get
+ * their pinch points closer than a finger or two apart, and 25 units (70% of `MERGE_RADIUS`) made
+ * creating a string with hands nearly impossible.
  */
-export const CREATE_RADIUS = Math.round(MERGE_RADIUS * 0.7)
+export const CREATE_RADIUS = 70
 /** An armed pair becomes a string preview once the hands pull this much further apart. */
 export const CREATE_PULL = 15
 /** A new string must be at least this long (stage units). */

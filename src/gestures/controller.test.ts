@@ -42,8 +42,9 @@ const hand = (id: string, x: number, y: number): Pointer => ({ id, kind: 'hand',
 const mouse = (x: number, y: number): Pointer => ({ id: 'mouse', kind: 'mouse', pos: { x, y } })
 
 describe('creating strings', () => {
-  it('uses a creation radius smaller than the delete radius', () => {
-    expect(CREATE_RADIUS).toBeLessThan(MERGE_RADIUS)
+  it('keeps the creation radius a small fraction of the stage', () => {
+    expect(CREATE_RADIUS).toBeGreaterThan(MERGE_RADIUS)
+    expect(CREATE_RADIUS).toBeLessThan(120)
   })
 
   it('arms two pinches that start close together, and stretches a string once they pull apart', () => {
