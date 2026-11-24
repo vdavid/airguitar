@@ -1,6 +1,6 @@
 import type { AudioEngine } from '../audio/engine.ts'
 import { baseMidi, INSTRUMENTS } from '../audio/instruments/catalog.ts'
-import { getInstrument } from '../audio/instruments/registry.ts'
+import { getInstrument, soundingPitch } from '../audio/instruments/registry.ts'
 import type { Voice } from '../audio/instruments/types.ts'
 import { clamp, lerpVec, type Vec } from '../geom.ts'
 import { stringPitch } from '../music/pitch.ts'
@@ -131,7 +131,7 @@ export class StringPlayer {
   labelOf(s: StageString): string {
     const { key, tone } = this.stage.state
     const midi = this.pitchOf(s)
-    return getInstrument(s.instrument).label?.(midi) ?? noteLabel(midi, key, tone)
+    return getInstrument(s.instrument).label?.(midi) ?? noteLabel(soundingPitch(s.instrument, midi), key, tone)
   }
 
   /**

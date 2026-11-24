@@ -165,7 +165,7 @@ export class GestureController {
     this.positions.delete(id)
     if (!intent) return
     if (intent.type === 'drag') this.host.stage.settle(intent.stringId)
-    else if (intent.type === 'expression') this.expression.release(id)
+    else if (intent.type === 'expression') this.expression.cancel(id)
     else if (intent.type === 'create' && intent.partner !== null) this.unpair(intent.partner)
   }
 

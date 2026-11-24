@@ -17,8 +17,10 @@ export interface ExpressionHandler {
   pinchAir(pointer: Pointer): boolean
   /** An owned pinch moved. */
   move(pointerId: string, pos: Vec): void
-  /** An owned pinch ended (released, or the hand was lost). */
+  /** An owned pinch was let go on purpose. */
   release(pointerId: string): void
+  /** An owned pinch was interrupted (the hand was lost, the mode changed): undo it quietly. */
+  cancel(pointerId: string): void
 }
 
 export const NO_EXPRESSION: ExpressionHandler = {
@@ -26,4 +28,5 @@ export const NO_EXPRESSION: ExpressionHandler = {
   pinchAir: () => false,
   move: () => undefined,
   release: () => undefined,
+  cancel: () => undefined,
 }

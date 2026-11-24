@@ -113,8 +113,9 @@ function hit(drum: DrumId, tone: Tone, noise: Noise, cowbell: () => void): numbe
       noise('highpass', 6200, 1.2, 0.06, 0.2)
       return 0.06
     case 'ka':
-      noise('bandpass', 2300, 1.4, 0.035, 0.45)
-      return 0.04
+      // Louder than Music Maker's 0.45: a lone narrow noise burst read much quieter than the other hits.
+      noise('bandpass', 2300, 1.4, 0.05, 1)
+      return 0.05
     case 'slap':
       noise('bandpass', 1700, 0.9, 0.07, 0.75)
       tone('sine', 420, 300, 0.03, 0.06, 0.3)

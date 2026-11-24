@@ -1,4 +1,5 @@
 import type { InstrumentId } from './catalog.ts'
+import type { Range } from './range.ts'
 
 /** Everything an instrument needs to make sound, handed in by the engine. */
 export interface InstrumentContext {
@@ -50,6 +51,8 @@ export type HoldStyle = 'sustain' | 'roll' | 'once'
 export interface Instrument {
   readonly id: InstrumentId
   readonly hold: HoldStyle
+  /** The range notes fold into by octaves (`range.ts`). Unpitched instruments (drums) have none. */
+  readonly range?: Range
   play(context: InstrumentContext, note: NoteRequest): Voice
   /** What the note pop says for this pitch, when a note name doesn't fit (drums name the drum). */
   label?(midi: number): string

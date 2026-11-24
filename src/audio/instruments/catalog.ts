@@ -79,7 +79,7 @@ export const INSTRUMENTS: Readonly<Record<InstrumentId, InstrumentInfo>> = Objec
   info('strings', 'Strings', '#ff8fd0', 3, { gain: 0.5, reverb: 0.35 }),
   info('flute', 'Flute', '#9eeaff', 4, { gain: 0.6, reverb: 0.34 }),
   info('trumpet', 'Trumpet', '#f5b83d', 4, { gain: 0.8, reverb: 0.28 }),
-  info('voices', 'Voices', '#d4c5ff', 3, { gain: 1.9, reverb: 0.4 }),
+  info('voices', 'Voices', '#d4c5ff', 3, { gain: 2.6, reverb: 0.4 }),
   info('bells', 'Bells', '#fff59a', 5, { gain: 0.5, reverb: 0.4 }),
   info('synth', 'Synth', '#6dff9c', 4, { gain: 0.4, reverb: 0.2 }),
   info('bass', 'Bass', '#7aa8ff', 1, { gain: 1, reverb: 0.03, lowpassHz: 1400 }),

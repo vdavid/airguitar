@@ -9,7 +9,8 @@ import { pullString, SNAP_MIN, snapVelocity, sweepAmounts } from './shapes.ts'
  *   it snaps back; a deep enough pull plays the string with a twang as it springs back.
  * - Pinch in empty air and drag: down darkens the whole mix, up thins it, sideways adds echo.
  *   Letting go clears it.
- * Neither depends on timing: how far you pull is all that matters.
+ * Neither depends on timing: how far you pull is all that matters. Only a deliberate let-go snaps a
+ * string; a pinch cut short (hand lost, mode switch) just straightens it.
  */
 
 interface Bending {
@@ -87,6 +88,18 @@ export function createExpressionHandler(ctx: AppContext): ExpressionHandler {
       if (!o) return
       if (o.type === 'sweep') endSweep()
       else snap(o)
+    },
+    cancel(pointerId) {
+      const o = owned.get(pointerId)
+      owned.delete(pointerId)
+      if (!o) return
+      if (o.type === 'sweep') {
+        endSweep()
+        return
+      }
+      // Interrupted: straighten the string and drop the bend, but don't play it.
+      ctx.strings.setPull(o.stringId, null)
+      ctx.strings.bend(o.stringId, 0)
     },
   }
 }

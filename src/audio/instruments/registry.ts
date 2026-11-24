@@ -5,6 +5,7 @@ import { epiano, organInstrument, piano } from './keys.ts'
 import { bells, kalimba, marimba, steelpan } from './mallets.ts'
 import { cello, fluteInstrument, strings, trumpetInstrument, violin, voicesInstrument } from './orchestra.ts'
 import { bass, electricGuitar, guitar, harp, oud, qanun, sitar } from './plucked.ts'
+import { fitRange } from './range.ts'
 import type { Instrument } from './types.ts'
 
 /**
@@ -40,4 +41,10 @@ const REGISTERED: Readonly<Record<InstrumentId, Instrument>> = {
 
 export function getInstrument(id: InstrumentId): Instrument {
   return REGISTERED[id]
+}
+
+/** The pitch an instrument actually sounds for `midi`, after folding into its range. */
+export function soundingPitch(id: InstrumentId, midi: number): number {
+  const range = getInstrument(id).range
+  return range ? fitRange(midi, range) : midi
 }

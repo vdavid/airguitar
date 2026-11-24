@@ -90,6 +90,7 @@ export function createSynthInstrument(id: InstrumentId, spec: SynthSpec): Instru
   return {
     id,
     hold: spec.hold,
+    range: spec.range,
     play: (context, note) => playSynth(context, note, spec),
   }
 }

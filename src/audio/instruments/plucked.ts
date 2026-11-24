@@ -44,6 +44,7 @@ export function createPluckedInstrument(id: InstrumentId, spec: PluckedSpec): In
   return {
     id,
     hold: spec.hold,
+    range: spec.range,
     play(context, note) {
       const { ctx, out } = context
       const start = Math.max(note.when ?? ctx.currentTime, ctx.currentTime)
