@@ -1,0 +1,11 @@
+/* Beat controls in the top bar. */
+.tempo .bpm-value {
+  min-width: 30px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.tempo.idle .bpm-value {
+  opacity: 0.5;
+}
