@@ -26,8 +26,8 @@ const HELP_HTML = `
 <h3>Playing</h3>
 <ul>
   <li><b>Pluck:</b> sweep an open fingertip across a string. Where you cross it doesn’t matter. Faster sweeps are louder.</li>
-  <li><b>Hold a note:</b> rest a fingertip on a string. Bowed, blown, and sung instruments keep sounding while you stay.</li>
-  <li><b>Bend</b> (Play mode): pinch a string and pull it sideways to bend its note. Let go and it snaps back.</li>
+  <li><b>Hold a note:</b> rest a fingertip on a string. Bowed, blown, and sung instruments keep sounding while you stay; mallets and drums keep playing.</li>
+  <li><b>Bend</b> (Play mode): pinch a string and pull it sideways to bend its note up. Let go and it snaps back, and a big pull plays it.</li>
   <li><b>Sweep</b> (Play mode): pinch empty air and drag. Down darkens the sound, up thins it, sideways adds echo. Let go and it clears.</li>
 </ul>
 <h3>Buttons and menus</h3>
