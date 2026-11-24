@@ -1,5 +1,6 @@
 import type { AppContext } from './app.ts'
 import { mountBeats } from './beats/controls.ts'
+import { mountRecording } from './record/controls.ts'
 import { mountExpression } from './expression/handler.ts'
 import { mountCoreControls } from './ui/core-controls.ts'
 import { mountHelp } from './help/dialog.ts'
@@ -21,7 +22,7 @@ export function mountFeatures(ctx: AppContext): void {
     },
   })
   mountExpression(ctx)
-  mountBeats(ctx)
+  mountRecording(ctx, mountBeats(ctx))
   mountSetups(ctx)
   mountHelp(ctx)
   mountSettings(ctx)

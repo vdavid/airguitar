@@ -1,0 +1,53 @@
+/* Recording controls in the top bar, and the "Your recording" dialog. */
+.rec-btn {
+  padding: 0 10px;
+  min-width: 40px;
+  justify-content: center;
+}
+
+.rec-btn span:empty {
+  display: none;
+}
+
+.rec-btn span {
+  font-variant-numeric: tabular-nums;
+}
+
+.rec-btn svg {
+  color: var(--red);
+}
+
+.rec-btn.recording {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+.rec-btn.recording svg {
+  color: #fff;
+  animation: rec-blink 0.8s steps(2) infinite;
+}
+
+@keyframes rec-blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.take-modal video,
+.take-modal audio {
+  display: block;
+  width: 100%;
+  max-height: 52vh;
+  margin: 0 0 12px;
+  border-radius: 10px;
+  background: #000;
+}
+
+.take-modal audio {
+  background: transparent;
+}
+
+.take-modal [hidden] {
+  display: none;
+}
