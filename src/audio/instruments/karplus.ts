@@ -23,6 +23,12 @@ export interface KarplusParams {
 }
 
 export const GUITAR: KarplusParams = { duration: 2.6, brightness: 0.62, pick: 0.2, t60: 3.4 }
+export const HARP: KarplusParams = { duration: 3.2, brightness: 0.34, pick: 0.48, t60: 5 }
+export const OUD: KarplusParams = { duration: 1.7, brightness: 0.85, pick: 0.11, t60: 1.9, detune: [-6, 6] }
+export const BASS: KarplusParams = { duration: 2.2, brightness: 0.24, pick: 0.3, t60: 3 }
+export const ELECTRIC: KarplusParams = { duration: 3, brightness: 0.7, pick: 0.14, t60: 5 }
+export const QANUN: KarplusParams = { duration: 2.4, brightness: 0.9, pick: 0.08, t60: 2.8, detune: [-7, 0, 7] }
+export const SITAR: KarplusParams = { duration: 3.2, brightness: 0.95, pick: 0.06, t60: 4.5, buzz: true }
 
 function renderString(
   out: Float32Array,

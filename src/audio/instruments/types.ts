@@ -40,7 +40,17 @@ export interface Voice {
   readonly endsAt: number
 }
 
+/**
+ * What a finger resting on a string does: `sustain` holds the note until the finger leaves (it gets
+ * `held: true` and a `release()`), `roll` keeps re-striking it (mallets, drums, tremolo-picked
+ * courses), `once` sounds it once.
+ */
+export type HoldStyle = 'sustain' | 'roll' | 'once'
+
 export interface Instrument {
   readonly id: InstrumentId
+  readonly hold: HoldStyle
   play(context: InstrumentContext, note: NoteRequest): Voice
+  /** What the note pop says for this pitch, when a note name doesn't fit (drums name the drum). */
+  label?(midi: number): string
 }

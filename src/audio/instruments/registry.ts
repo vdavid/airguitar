@@ -1,26 +1,43 @@
 import type { InstrumentId } from './catalog.ts'
-import { GUITAR } from './karplus.ts'
-import { createPluckedInstrument } from './plucked.ts'
+import { drums, handDrums } from './drums.ts'
+import { subBass, synth } from './electronic.ts'
+import { epiano, organInstrument, piano } from './keys.ts'
+import { bells, kalimba, marimba, steelpan } from './mallets.ts'
+import { cello, fluteInstrument, strings, trumpetInstrument, violin, voicesInstrument } from './orchestra.ts'
+import { bass, electricGuitar, guitar, harp, oud, qanun, sitar } from './plucked.ts'
 import type { Instrument } from './types.ts'
 
 /**
- * Which sound each instrument id makes. The catalog (`catalog.ts`) lists all 24 for the picker;
- * an id with no registered sound yet plays the guitar, so every tile works.
- *
- * Add an instrument: implement `Instrument` in its own file and register it in `REGISTERED` below.
+ * Which sound each instrument id makes. The catalog (`catalog.ts`) lists all 24 for the picker
+ * (names, colors, octaves, mix); this maps each id to its synthesized sound, one file per family.
  */
-
-const guitar = createPluckedInstrument('guitar', GUITAR)
-
-const REGISTERED: Partial<Record<InstrumentId, Instrument>> = {
+const REGISTERED: Readonly<Record<InstrumentId, Instrument>> = {
   guitar,
+  egtr: electricGuitar,
+  harp,
+  oud,
+  qanun,
+  sitar,
+  piano,
+  epiano,
+  organ: organInstrument,
+  marimba,
+  kalimba,
+  steelpan,
+  violin,
+  cello,
+  strings,
+  flute: fluteInstrument,
+  trumpet: trumpetInstrument,
+  voices: voicesInstrument,
+  bells,
+  synth,
+  bass,
+  sub: subBass,
+  drums,
+  handdrums: handDrums,
 }
 
 export function getInstrument(id: InstrumentId): Instrument {
-  return REGISTERED[id] ?? guitar
-}
-
-/** True when the id has its own sound (not the guitar placeholder). */
-export function hasOwnSound(id: InstrumentId): boolean {
-  return REGISTERED[id] !== undefined
+  return REGISTERED[id]
 }
