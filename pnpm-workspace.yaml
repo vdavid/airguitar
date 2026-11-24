@@ -1,0 +1,18 @@
+# Don't prompt before wiping node_modules; checks run pnpm non-interactively.
+confirmModulesPurge: false
+
+# Block installs of versions published less than three days ago (minutes). pnpm 11
+# ignores `minimum-release-age` in .npmrc, so it lives here.
+minimumReleaseAge: 4320
+
+# Refuse a package whose trust level dropped since the last resolve (publisher takeover).
+trustPolicy: no-downgrade
+
+# Only direct dependencies may use exotic sources (git, tarball URLs).
+blockExoticSubdeps: true
+
+# pnpm 11 requires explicit per-package build-script approval.
+allowBuilds:
+  esbuild: false
+  workerd: true
+  sharp: false

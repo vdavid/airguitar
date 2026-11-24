@@ -1,0 +1,25 @@
+node_modules
+/dist
+.wrangler
+
+# OS
+.DS_Store
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Vite
+vite.config.ts.timestamp-*
+
+# Worktree warm-start logs from the local harness.
+.warming-worktree*
+
+# Local worktrees.
+/.claude/worktrees/
+
+# Video files stay out of git (inspiration clips and the like).
+*.mp4
+*.mov
+*.webm

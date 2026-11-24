@@ -1,0 +1,10 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "schedule": ["before 6am on monday"],
+  "timezone": "Europe/Stockholm",
+  "automerge": true,
+  "platformAutomerge": true,
+  "minimumReleaseAge": "3 days",
+  "rebaseWhen": "conflicted"
+}
