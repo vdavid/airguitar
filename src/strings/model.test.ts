@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { orient, parseSnapshot, StageStore, MAX_STRINGS } from '../state/stage.ts'
-import { HAND_REACH, isMerged, nearestBody, nearestEndpoint, nearestMiddle } from './model.ts'
+import {
+  HAND_REACH,
+  isMerged,
+  keepApart,
+  MIN_KEPT_LENGTH,
+  nearestBody,
+  nearestEndpoint,
+  nearestMiddle,
+} from './model.ts'
 
 const s1 = { id: 1, a: { x: 100, y: 100 }, b: { x: 500, y: 100 }, instrument: 'guitar' as const }
 const s2 = { id: 2, a: { x: 100, y: 400 }, b: { x: 500, y: 400 }, instrument: 'harp' as const }
@@ -72,6 +80,33 @@ describe('endpoint grab, move, and merge-delete', () => {
     for (let i = 0; i < MAX_STRINGS + 3; i++) store.addString({ x: 0, y: i * 10 }, { x: 200, y: i * 10 })
     expect(store.state.strings).toHaveLength(MAX_STRINGS)
   })
+
+  it('holds 32 strings', () => {
+    expect(MAX_STRINGS).toBe(32)
+  })
+})
+
+describe('keepApart (Mixed mode: moving an end never deletes)', () => {
+  it('leaves a far enough end alone', () => {
+    expect(keepApart({ x: 100, y: 100 }, { x: 400, y: 100 }, { x: 300, y: 100 })).toEqual({ x: 400, y: 100 })
+  })
+
+  it('pushes a too-close end out to the minimum length, on its side', () => {
+    const p = keepApart({ x: 100, y: 100 }, { x: 110, y: 100 }, { x: 300, y: 100 })
+    expect(p.x).toBeCloseTo(100 + MIN_KEPT_LENGTH)
+    expect(p.y).toBeCloseTo(100)
+  })
+
+  it('uses the previous direction when the end lands exactly on the other end', () => {
+    const p = keepApart({ x: 100, y: 100 }, { x: 100, y: 100 }, { x: 100, y: 400 })
+    expect(p.x).toBeCloseTo(100)
+    expect(p.y).toBeCloseTo(100 + MIN_KEPT_LENGTH)
+  })
+
+  it('keeps a string out of the merge zone', () => {
+    const s = { ...s1, b: keepApart(s1.a, { x: 101, y: 101 }, s1.b) }
+    expect(isMerged(s)).toBe(false)
+  })
 })
 
 describe('snapshots', () => {
@@ -84,6 +119,16 @@ describe('snapshots', () => {
     other.load(json)
     expect(other.state).toEqual(store.state)
     expect(other.addString({ x: 0, y: 0 }, { x: 300, y: 0 })?.id).toBe(2)
+  })
+
+  it('accepts a full stage of 32 strings', () => {
+    const strings = Array.from({ length: 32 }, (_, i) => ({
+      id: i + 1,
+      a: { x: 100, y: 20 + i * 20 },
+      b: { x: 900, y: 20 + i * 20 },
+      instrument: 'guitar',
+    }))
+    expect(parseSnapshot({ ...new StageStore().snapshot(), strings }).strings).toHaveLength(32)
   })
 
   it('rejects malformed data', () => {

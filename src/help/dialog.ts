@@ -4,20 +4,21 @@ import { createModal, dialogButton } from '../ui/modal.ts'
 import { iconButton } from '../ui/topbar.ts'
 
 /**
- * The Help dialog: Music Maker's "How to play", rewritten for our gestures (Build/Play, one pitch
+ * The Help dialog: Music Maker's "How to play", rewritten for our gestures (Build/Mixed/Play, one pitch
  * per string, no radial menu, no looper). Keep it in step with `gestures/` and AGENTS.md's gesture
  * rules when a gesture changes.
  */
 
 const HELP_HTML = `
-<h3>Build and Play</h3>
+<h3>Build, Mixed, and Play</h3>
 <ul>
-  <li><b>Build</b> (the hammer): make strings, move their ends, remove them, and pick their instruments. Plucking works here too.</li>
-  <li><b>Play</b> (the hand): play only, so nothing moves by accident. Bend lives here.</li>
+  <li><b>Build</b> (the hammer, key <b>B</b>): make strings, move their ends, remove them, and pick their instruments. Plucking works here too.</li>
+  <li><b>Mixed</b> (the string with two handles, key <b>M</b>): play, bend, and move ends to change notes. No new strings, no removing, no instrument changes; drop an end on the other and the string stays, just short.</li>
+  <li><b>Play</b> (the hand, key <b>P</b>): play only, so nothing moves by accident. Bend works here too.</li>
 </ul>
 <h3>Making strings</h3>
 <ul>
-  <li><b>Make a string:</b> pinch thumb to index finger on both hands, pull your hands apart, and let go. With the mouse, drag in empty space. Or open <b>Setups</b> for a ready-made stage.</li>
+  <li><b>Make a string:</b> pinch thumb to index finger on both hands, pull your hands apart, and let go. With the mouse, drag in empty space. The instruments open right away so you can pick one; close them to keep the one shown at the top. Or open <b>Setups</b> for a ready-made stage. The stage holds up to 32 strings.</li>
   <li><b>Its note:</b> every string plays one note, set by its length. Shorter strings sound higher. Notes snap to the key and tone at the top; pick <b>Free</b> for no snapping.</li>
   <li><b>Move an end:</b> pinch an end and drag it. The note follows the new length.</li>
   <li><b>Remove a string:</b> drag one end onto its other end and let go.</li>
@@ -27,7 +28,7 @@ const HELP_HTML = `
 <ul>
   <li><b>Pluck:</b> sweep an open fingertip across a string. Where you cross it doesn’t matter. Faster sweeps are louder.</li>
   <li><b>Hold a note:</b> rest a fingertip on a string. Bowed, blown, and sung instruments keep sounding while you stay; mallets and drums keep playing.</li>
-  <li><b>Bend</b> (Play mode): pinch a string and pull it sideways to bend its note up. Let go and it snaps back, and a big pull plays it.</li>
+  <li><b>Bend</b> (Mixed and Play): pinch a string and pull it sideways to bend its note up. Let go and it snaps back, and a big pull plays it.</li>
 </ul>
 <h3>Beats and recording</h3>
 <ul>
@@ -40,6 +41,7 @@ const HELP_HTML = `
 <ul>
   <li>The amber ring between your thumb and index finger is your pointer. Put it on any button and pinch.</li>
   <li>Pinch outside a menu or dialog to close it. Esc closes it too.</li>
+  <li>Everything saves by itself: reopen the page and your strings, mode, and beat are back.</li>
 </ul>
 <h3>If tracking struggles</h3>
 <ul>

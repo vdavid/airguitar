@@ -1,10 +1,10 @@
 import { Emitter } from './observable.ts'
 
 /**
- * Session state that isn't part of a saved stage: the Build/Play mode and the input source.
+ * Session state that isn't part of a saved stage: the mode (Build, Mixed, Play) and the input source.
  */
 
-export type Mode = 'build' | 'play'
+export type Mode = 'build' | 'mixed' | 'play'
 export type InputSource = 'idle' | 'camera' | 'mouse'
 
 export interface AppState {

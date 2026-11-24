@@ -167,6 +167,9 @@ button.sq {
 
 .segmented button:last-child {
   border-radius: 0 10px 10px 0;
+}
+
+.segmented button + button {
   border-left: 0;
 }
 

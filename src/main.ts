@@ -267,7 +267,8 @@ function hint(c: AppContext): string {
   const input = c.app.state.input
   if (input === 'idle') return ''
   const handsOn = input === 'camera'
-  const build = c.app.state.mode === 'build'
+  const mode = c.app.state.mode
+  const build = mode === 'build'
   if (c.picker.open)
     return handsOn ? 'Pinch an instrument to pick it. Pinch outside to close.' : 'Click an instrument to pick it.'
   if (c.gestures.previews().length > 0)
@@ -286,6 +287,9 @@ function hint(c: AppContext): string {
     return handsOn
       ? 'Pinch an end to move it, or the middle to change the instrument.'
       : 'Drag an end to move it. Click the middle to change the instrument.'
+  }
+  if (plucks < 14 && mode === 'mixed') {
+    return handsOn ? 'Pinch an end and move it to change the note.' : 'Drag an end to change the note.'
   }
   return ''
 }

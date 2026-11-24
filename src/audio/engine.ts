@@ -3,6 +3,10 @@ import type { InstrumentId } from './instruments/catalog.ts'
 import { getInstrument } from './instruments/registry.ts'
 import type { NoteRequest, Voice } from './instruments/types.ts'
 import { createMixGraph, type MixGraph } from './graph.ts'
+import { VoicePool } from './voices.ts'
+
+/** Most string voices sounding at once; past it the oldest is stolen (`voices.ts`). */
+export const MAX_VOICES = 48
 
 /**
  * The live audio: one `AudioContext` and its mix graph (see `graph.ts`). Browsers only start
@@ -14,6 +18,7 @@ export class AudioEngine {
   private mix: MixGraph | null = null
   private volume = 0.9
   private color = { brightness: 1, echo: 0, bpm: 100 }
+  private readonly voices = new VoicePool(MAX_VOICES)
 
   /** The live graph, once started. Beats and recording connect here (`beats`, `output`). */
   get graph(): MixGraph | null {
@@ -37,11 +42,15 @@ export class AudioEngine {
     return this.mix
   }
 
-  /** Plays a note on an instrument. Returns null before `start()`. */
+  /** Plays a note on an instrument (counted against `MAX_VOICES`). Returns null before `start()`. */
   play(instrument: InstrumentId, note: NoteRequest): Voice | null {
     const mix = this.mix
     if (!mix) return null
-    return getInstrument(instrument).play({ ctx: mix.ctx, out: mix.instrumentBus(instrument), noise: mix.noise }, note)
+    const voice = getInstrument(instrument).play(
+      { ctx: mix.ctx, out: mix.instrumentBus(instrument), noise: mix.noise },
+      note,
+    )
+    return this.voices.add(voice, mix.ctx.currentTime)
   }
 
   setVolume(volume: number): void {

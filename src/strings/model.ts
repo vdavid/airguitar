@@ -77,6 +77,26 @@ export function nearestBody(
   return best
 }
 
+/**
+ * In modes that can't delete (Mixed), a dragged end stays at least this far from the other end:
+ * the shortest string the mouse can make, well outside `MERGE_RADIUS`.
+ */
+export const MIN_KEPT_LENGTH = MIN_NEW_LENGTH.mouse
+
+/**
+ * Where a dragged end goes when the string must keep `min` length: `to` if that's far enough from
+ * the `fixed` end, else pushed out along its direction from `fixed` (or `prev`'s, the end's last
+ * position, when `to` sits right on `fixed`).
+ */
+export function keepApart(fixed: Vec, to: Vec, prev: Vec, min = MIN_KEPT_LENGTH): Vec {
+  const d = dist(fixed, to)
+  if (d >= min) return to
+  let dir = d > 1e-6 ? to : prev
+  if (dist(fixed, dir) <= 1e-6) dir = { x: fixed.x + 1, y: fixed.y }
+  const len = dist(fixed, dir)
+  return { x: fixed.x + ((dir.x - fixed.x) / len) * min, y: fixed.y + ((dir.y - fixed.y) / len) * min }
+}
+
 /** True when the string's ends sit on each other: the drop that deletes it. */
 export function isMerged(s: StageString, radius = MERGE_RADIUS): boolean {
   return stringLength(s) < radius

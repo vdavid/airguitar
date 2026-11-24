@@ -41,7 +41,7 @@ export type StageChange =
   | { readonly type: 'key' | 'tone' | 'new-string-instrument' | 'size' }
   | { readonly type: 'loaded' }
 
-export const MAX_STRINGS = 16
+export const MAX_STRINGS = 32
 export const LANDSCAPE = { width: 1280, height: 720 } as const
 
 export const DEFAULT_STAGE: StageState = {

@@ -2,7 +2,7 @@
  * The one-line top bar. Each feature mounts its own controls into a slot, at an order number, so
  * features don't edit each other's code:
  *
- * - `start` slot (left): brand 0, Build/Play 10, key 20, tone 30, new-string instrument 40.
+ * - `start` slot (left): brand 0, Build/Mixed/Play 10, key 20, tone 30, new-string instrument 40.
  * - `end` slot (right): sound 50, beats 100–199, recording 200–299, setups/help/settings 300–399.
  *
  * Use `iconButton` and the dropdowns in `dropdown.ts` for a consistent look: SVG icons with an

@@ -1,4 +1,5 @@
 import type { AppContext } from './app.ts'
+import { mountAutosave } from './autosave/mount.ts'
 import { mountBeats } from './beats/controls.ts'
 import { mountRecording } from './record/controls.ts'
 import { mountExpression } from './expression/handler.ts'
@@ -29,4 +30,6 @@ export function mountFeatures(ctx: AppContext): void {
   mountSetups(ctx)
   mountHelp(ctx)
   mountSettings(ctx)
+  // Last, so every control is listening when the saved session comes back.
+  mountAutosave(ctx)
 }

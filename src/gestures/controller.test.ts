@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { AppStore } from '../state/app.ts'
 import { StageStore } from '../state/stage.ts'
+import { MIN_KEPT_LENGTH } from '../strings/model.ts'
 import { PickerState } from '../ui/picker.ts'
 import { GestureController, type GestureHost, type Pointer } from './controller.ts'
 
@@ -210,5 +211,89 @@ describe('expression handler', () => {
     ctl.cancelAll()
     expect(handler.cancel).toHaveBeenCalledTimes(2)
     expect(handler.release).not.toHaveBeenCalled()
+  })
+})
+
+describe('the picker on a new string', () => {
+  it('opens for a string the mouse just made, with the top bar instrument on it', () => {
+    const { ctl, stage, picker } = setup()
+    stage.setNewStringInstrument('harp')
+    ctl.pinchStart(mouse(100, 100))
+    ctl.pinchMove(mouse(400, 100))
+    ctl.pinchEnd('mouse')
+    const s = stage.state.strings[0]
+    expect(s?.instrument).toBe('harp')
+    expect(picker.open?.target).toEqual({ kind: 'string', id: s?.id })
+  })
+
+  it('opens for a string two hands just made, and closing it keeps the instrument', () => {
+    const { ctl, stage, picker } = setup()
+    ctl.pinchStart(hand('h1', 300, 300))
+    ctl.pinchStart(hand('h2', 700, 300))
+    ctl.pinchEnd('h1')
+    ctl.pinchEnd('h2')
+    expect(picker.open?.target.kind).toBe('string')
+    ctl.pinchStart(hand('h3', 5, 715))
+    ctl.pinchEnd('h3')
+    expect(picker.open).toBeNull()
+    expect(stage.state.strings[0]?.instrument).toBe('guitar')
+  })
+
+  it('stays shut when nothing was made', () => {
+    const { ctl, picker } = setup()
+    ctl.pinchStart(mouse(100, 100))
+    ctl.pinchMove(mouse(120, 100))
+    ctl.pinchEnd('mouse')
+    expect(picker.open).toBeNull()
+  })
+})
+
+describe('Mixed mode', () => {
+  it('moves an end, which re-pitches the string', () => {
+    const { ctl, stage, app } = setup()
+    const s = stage.addString({ x: 100, y: 300 }, { x: 600, y: 300 })
+    app.setMode('mixed')
+    ctl.pinchStart(mouse(600, 300))
+    ctl.pinchMove(mouse(800, 300))
+    ctl.pinchEnd('mouse')
+    expect(stage.find(s?.id ?? 0)?.b).toEqual({ x: 800, y: 300 })
+  })
+
+  it('never deletes: an end dropped on the other stays at the minimum length', () => {
+    const { ctl, stage, app, spies } = setup()
+    stage.addString({ x: 100, y: 300 }, { x: 600, y: 300 })
+    app.setMode('mixed')
+    ctl.pinchStart(mouse(600, 300))
+    ctl.pinchMove(mouse(102, 300))
+    ctl.pinchEnd('mouse')
+    expect(stage.state.strings).toHaveLength(1)
+    expect(spies.stringMerged).not.toHaveBeenCalled()
+    const s = stage.state.strings[0]
+    expect(s && Math.hypot(s.b.x - s.a.x, s.b.y - s.a.y)).toBeCloseTo(MIN_KEPT_LENGTH)
+  })
+
+  it('creates no strings', () => {
+    const { ctl, stage, app } = setup()
+    app.setMode('mixed')
+    ctl.pinchStart(hand('h1', 100, 300))
+    ctl.pinchStart(hand('h2', 600, 300))
+    ctl.pinchEnd('h1')
+    ctl.pinchStart(mouse(100, 100))
+    ctl.pinchMove(mouse(400, 100))
+    ctl.pinchEnd('mouse')
+    expect(stage.state.strings).toHaveLength(0)
+  })
+
+  it('bends on the middle and never opens the picker', () => {
+    const { ctl, stage, app, picker } = setup()
+    stage.addString({ x: 100, y: 300 }, { x: 600, y: 300 })
+    const handler = { pinchString: vi.fn(() => true), move: vi.fn(), release: vi.fn(), cancel: vi.fn() }
+    ctl.setExpressionHandler(handler)
+    app.setMode('mixed')
+    ctl.pinchStart(hand('h1', 350, 300))
+    ctl.pinchEnd('h1')
+    expect(picker.open).toBeNull()
+    expect(handler.pinchString).toHaveBeenCalledOnce()
+    expect(handler.release).toHaveBeenCalledOnce()
   })
 })

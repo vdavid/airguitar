@@ -67,6 +67,19 @@ export class BeatPlayer {
     this.update({ bpm: clampBpm(bpm) })
   }
 
+  /**
+   * Puts back a saved beat, parts, and tempo without starting it (audio needs a user gesture
+   * first); `resume()` starts it then.
+   */
+  restore(state: BeatState): void {
+    this.update({ beat: state.beat, parts: new Set(state.parts), bpm: clampBpm(state.bpm) })
+  }
+
+  /** Starts the selected beat if it isn't playing yet (after `restore`). Call from a user gesture. */
+  resume(): void {
+    if (this.current.beat && !this.scheduler.playing) this.start()
+  }
+
   /** Schedules one step of `beat` on any graph (live or offline). */
   scheduleStep(graph: MixGraph, beat: BeatId, parts: ReadonlySet<PartId>, step: number, time: number): void {
     const pattern = BEATS[beat]

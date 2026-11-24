@@ -1,5 +1,5 @@
 import { INSTRUMENTS } from '../audio/instruments/catalog.ts'
-import { allows } from '../gestures/mode.ts'
+import { allows, MODE_KEYS, MODES, modeForKey } from '../gestures/mode.ts'
 import { KEY_NAMES, TONE_ORDER, TONES, type ToneId } from '../music/theory.ts'
 import { iconSvg } from '../render/icons.ts'
 import type { AppStore, Mode } from '../state/app.ts'
@@ -8,7 +8,7 @@ import { selectDropdown } from './dropdown.ts'
 import { ICON } from './icons.ts'
 import { iconButton, type TopBar } from './topbar.ts'
 
-/** The core's own top bar controls: brand, Build/Play, key, tone, and the new-string instrument. */
+/** The core's own top bar controls: brand, Build/Mixed/Play, key, tone, and the new-string instrument. */
 export function mountCoreControls(
   bar: TopBar,
   deps: { stage: StageStore; app: AppStore; openNewStringPicker: () => void; unlockAudio: () => void },
@@ -20,7 +20,7 @@ export function mountCoreControls(
   brand.innerHTML = 'Air <b>guitar</b>'
   bar.mount(brand, { slot: 'start', order: 0 })
 
-  // Build / Play: a two-button segmented toggle.
+  // Build / Mixed / Play: a three-button segmented control, also on the B, M, and P keys.
   const modes = document.createElement('div')
   modes.className = 'segmented'
   modes.setAttribute('role', 'radiogroup')
@@ -37,10 +37,22 @@ export function mountCoreControls(
     b.setAttribute('role', 'radio')
     return b
   }
-  const buildBtn = modeButton('build', ICON.build, 'Build: make, move, and change strings')
-  const playBtn = modeButton('play', ICON.play, 'Play: just play, the layout stays put')
-  modes.append(buildBtn, playBtn)
+  const modeButtons: Record<Mode, HTMLButtonElement> = {
+    build: modeButton('build', ICON.build, `Build (${MODE_KEYS.build}): make, move, and change strings`),
+    mixed: modeButton('mixed', ICON.mixed, `Mixed (${MODE_KEYS.mixed}): play and move ends, the strings stay`),
+    play: modeButton('play', ICON.play, `Play (${MODE_KEYS.play}): just play, the layout stays put`),
+  }
+  modes.append(...MODES.map((m) => modeButtons[m]))
   bar.mount(modes, { slot: 'start', order: 10 })
+
+  addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return
+    const mode = modeForKey(e.key)
+    if (!mode || isTyping(e.target) || document.querySelector('.modal.open')) return
+    e.preventDefault()
+    deps.unlockAudio()
+    app.setMode(mode)
+  })
 
   const key = selectDropdown({
     icon: ICON.key,
@@ -80,8 +92,7 @@ export function mountCoreControls(
 
   const render = (): void => {
     const mode = app.state.mode
-    buildBtn.setAttribute('aria-checked', String(mode === 'build'))
-    playBtn.setAttribute('aria-checked', String(mode === 'play'))
+    for (const m of MODES) modeButtons[m].setAttribute('aria-checked', String(mode === m))
     key.setValue(stage.state.key)
     tone.setValue(stage.state.tone)
     const info = INSTRUMENTS[stage.state.newStringInstrument]
@@ -93,4 +104,15 @@ export function mountCoreControls(
   render()
   app.changes.subscribe(render)
   stage.changes.subscribe(render)
+}
+
+/** True when a key press is going into a text field. */
+function isTyping(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  return (
+    target.isContentEditable ||
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    target instanceof HTMLSelectElement
+  )
 }

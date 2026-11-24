@@ -1,9 +1,10 @@
-import { dist, type Vec } from '../geom.ts'
+import { clamp, dist, type Vec } from '../geom.ts'
 import type { AppStore } from '../state/app.ts'
 import type { StageStore, StageString } from '../state/stage.ts'
 import {
   HAND_REACH,
   isMerged,
+  keepApart,
   MIN_NEW_LENGTH,
   MOUSE_REACH,
   nearestBody,
@@ -23,11 +24,13 @@ import { allows } from './mode.ts'
  * What a pinch does is decided once, when it starts (its "intent"), from what's under it:
  * 1. An open picker takes every pinch: a tile picks, the close button or outside closes.
  * 2. Hands only: an HTML control (top bar, dropdown) under the pinch gets pressed.
- * 3. Build: an endpoint → grab and move it; drop it on the other end to delete the string.
+ * 3. Build and Mixed: an endpoint → grab and move it. Build: drop it on the other end to delete
+ *    the string. Mixed: it can't get shorter than `MIN_KEPT_LENGTH`, so it never deletes.
  * 4. Build: a string's middle → open the instrument picker for it.
- * 5. Play: a string's body → offered to the expression handler (bend).
+ * 5. Mixed and Play: a string's body (middle included) → offered to the expression handler (bend).
  * 6. Empty air. Build: hands pair up (the nearest other waiting hand) and stretch a new string
- *    between them; the mouse drags one out. Play: nothing.
+ *    between them; the mouse drags one out. The picker then opens on the new string. Mixed and
+ *    Play: nothing.
  *
  * Nothing here depends on timing or holding still.
  */
@@ -130,7 +133,7 @@ export class GestureController {
     this.positions.set(p.id, p.pos)
     const intent = this.intents.get(p.id)
     if (!intent) return
-    if (intent.type === 'drag') this.host.stage.moveEnd(intent.stringId, intent.end, p.pos)
+    if (intent.type === 'drag') this.moveEnd(intent.stringId, intent.end, p.pos)
     else if (intent.type === 'expression') this.expression.move(p.id, p.pos)
   }
 
@@ -247,16 +250,38 @@ export class GestureController {
       this.host.tooShort()
       return
     }
-    const s = this.host.stage.addString(a, b)
-    if (s) this.host.stringCreated(s)
-    else this.host.stageFull()
+    const { stage, picker } = this.host
+    const s = stage.addString(a, b)
+    if (!s) {
+      this.host.stageFull()
+      return
+    }
+    this.host.stringCreated(s)
+    // Offer an instrument for it right away. It already plays the top bar's instrument (shown
+    // as picked), so closing the picker keeps that.
+    picker.show({ kind: 'string', id: s.id }, stringMiddle(s), stage.state, this.host.safeTop(), this.host.now())
+  }
+
+  private moveEnd(stringId: number, end: 'a' | 'b', to: Vec): void {
+    const { stage, app } = this.host
+    if (allows(app.state.mode, 'delete-string')) {
+      stage.moveEnd(stringId, end, to)
+      return
+    }
+    const s = stage.find(stringId)
+    if (!s) return
+    const { width, height } = stage.state
+    const p = keepApart(s[end === 'a' ? 'b' : 'a'], { x: clamp(to.x, 0, width), y: clamp(to.y, 0, height) }, s[end])
+    // Pushed off the stage (the other end sits near an edge): stay put rather than get short.
+    if (p.x < 0 || p.x > width || p.y < 0 || p.y > height) return
+    stage.moveEnd(stringId, end, p)
   }
 
   private dropEnd(stringId: number): void {
     const { stage } = this.host
     const s = stage.find(stringId)
     if (!s) return
-    if (isMerged(s)) {
+    if (allows(this.host.app.state.mode, 'delete-string') && isMerged(s)) {
       stage.removeString(s.id, 'merged')
       this.host.stringMerged(s)
       return

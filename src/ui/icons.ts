@@ -11,6 +11,8 @@ export const ICON = {
   build: svg(
     '<path d="M14.5 5.5 18.5 9.5"/><path d="M11 9 3.8 16.2a2 2 0 0 0 2.8 2.8L13.8 11.8"/><path d="M12.2 3.6 20.4 11.8 18.6 13.6 10.4 5.4Z"/>',
   ),
+  /** Mixed mode: a string with grab handles on its ends (play, and move ends). */
+  mixed: svg('<circle cx="5.8" cy="18.2" r="2.6"/><circle cx="18.2" cy="5.8" r="2.6"/><path d="M7.7 16.3 16.3 7.7"/>'),
   /** Play mode: an open hand. */
   play: svg(
     '<path d="M8 12.5V6.8a1.4 1.4 0 0 1 2.8 0V11"/><path d="M10.8 10.2V4.9a1.4 1.4 0 0 1 2.8 0v5.3"/><path d="M13.6 10.2V5.8a1.4 1.4 0 0 1 2.8 0v5.6"/><path d="M16.4 11.2V8.4a1.4 1.4 0 0 1 2.8 0v5.2a6.4 6.4 0 0 1-6.4 6.4h-.7a6 6 0 0 1-4.6-2.2L4.6 14.4a1.4 1.4 0 0 1 2.1-1.8L8 14"/>',
