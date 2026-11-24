@@ -207,8 +207,9 @@ function point(t: number): Vec[] {
     if (tip) pointing.push(tip)
     if (h.pinch.pinching) pointing.push(h.cursor)
   }
-  if (mouse.pos) pointing.push(mouse.pos)
-  const fresh = ctx.picker.updateHover(pointing)
+  const others = mouse.pos ? [mouse.pos] : []
+  const fresh = ctx.picker.updateHover(pointing, others, t)
+  pointing.push(...others)
   if (fresh && t - (ctx.picker.open?.openedAt ?? t) > 0.3) ctx.previewInstrument(fresh)
   updateHandHover(hands.hands.map((h) => ctx.toClient(h.cursor)))
   return pointing
@@ -239,6 +240,7 @@ function draw(t: number, dt: number, pointing: Vec[]): void {
     pointers: pointing,
     picker: ctx.picker.open,
     pickerCurrent: pickerCurrent(ctx),
+    pickerHands: ctx.app.state.input === 'camera',
     effects: ctx.effects,
     safeTop: ctx.safeTop(),
     debugLines: settings.debug ? debugLines() : [],
@@ -270,7 +272,7 @@ function hint(c: AppContext): string {
   const mode = c.app.state.mode
   const build = mode === 'build'
   if (c.picker.open)
-    return handsOn ? 'Pinch an instrument to pick it. Pinch outside to close.' : 'Click an instrument to pick it.'
+    return handsOn ? 'Pinch an instrument twice to pick it. Pinch outside to close.' : 'Click an instrument to pick it.'
   if (c.gestures.previews().length > 0)
     return handsOn ? 'Pull your hands apart, then let go.' : 'Let go to place the string.'
   if (c.gestures.waiting().length > 0) return 'Now pinch with your other hand too, and pull them apart.'

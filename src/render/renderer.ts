@@ -66,6 +66,8 @@ export interface FrameView {
   readonly picker: OpenPicker | null
   /** The instrument the picker's target plays now (outlined in the palette). */
   readonly pickerCurrent: InstrumentId | null
+  /** Hands are on (the picker shows its "pinch twice" hint). */
+  readonly pickerHands: boolean
   readonly effects: Effects
   readonly safeTop: number
   readonly debugLines: readonly string[]
@@ -82,7 +84,7 @@ export function renderFrame(g: CanvasRenderingContext2D, f: FrameView): void {
   f.effects.step(f.dt, f.t)
   drawParticles(g, f.effects)
   drawPops(g, f)
-  if (f.picker) drawPicker(g, f.picker, f.t, f.pickerCurrent)
+  if (f.picker) drawPicker(g, f.picker, f.t, f.pickerCurrent, f.pickerHands)
   drawHands(g, f)
   drawRipples(g, f)
   f.debugLines.forEach((line, i) => {

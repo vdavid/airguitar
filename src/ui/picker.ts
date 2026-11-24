@@ -1,11 +1,12 @@
 import { INSTRUMENT_IDS, type InstrumentId } from '../audio/instruments/catalog.ts'
 import { clamp, type Vec } from '../geom.ts'
+import { DoublePinch, type Armed, type DoublePinchResult } from './double-pinch.ts'
 
 /**
  * The instrument picker: Music Maker's palette of 24 icon tiles, drawn on the stage canvas so hands
- * can reach it. No timers: a pinch (or click) on a tile picks it; a pinch outside the panel or on
- * the close button closes it. This file is layout, hit testing, and open/hover state; drawing is in
- * `render/picker.ts`.
+ * can reach it. Hands choose a tile with a double pinch (`double-pinch.ts`), the mouse with one
+ * click; a single pinch outside the panel or on the close button closes it. This file is layout,
+ * hit testing, and open/hover/armed state; drawing is in `render/picker.ts`.
  */
 
 export type PickerTarget = { readonly kind: 'string'; readonly id: number } | { readonly kind: 'new-strings' }
@@ -73,10 +74,13 @@ export interface OpenPicker {
   /** The tile some pointer is over, for highlight and the header name. */
   readonly hover: InstrumentId | null
   readonly closeHover: boolean
+  /** The tile a first pinch armed (`double-pinch.ts`), and when, for the pulsing ring. */
+  readonly armed: Armed<InstrumentId> | null
 }
 
 export class PickerState {
   private current: OpenPicker | null = null
+  private readonly double = new DoublePinch<InstrumentId>()
 
   get open(): OpenPicker | null {
     return this.current
@@ -95,29 +99,47 @@ export class PickerState {
       openedAt: now,
       hover: null,
       closeHover: false,
+      armed: null,
     }
+    this.double.reset()
   }
 
   close(): void {
     this.current = null
+    this.double.reset()
+  }
+
+  /** A hand pinched a tile: the first pinch arms it, a second one in time chooses it. */
+  pinchTile(pointer: string, id: InstrumentId, t: number): DoublePinchResult {
+    const result = this.double.pinch(pointer, id, t)
+    if (this.current) this.current = { ...this.current, armed: this.double.armed }
+    return result
+  }
+
+  /** A hand's pinch ended or the hand was lost (for telling a real re-pinch from jitter). */
+  release(pointer: string, t: number): void {
+    this.double.release(pointer, t)
   }
 
   /**
-   * Updates hover from every pointer this frame. Returns the tile that just became hovered (for
-   * an audition sound), if any.
+   * Updates hover from every pointer this frame (`hands`: fingertips and pinch cursors; `others`:
+   * the mouse). Only hands clear an arm by moving onto another tile. Returns the tile that just
+   * became hovered (for an audition sound), if any.
    */
-  updateHover(points: readonly Vec[]): InstrumentId | null {
+  updateHover(hands: readonly Vec[], others: readonly Vec[], t: number): InstrumentId | null {
     const open = this.current
     if (!open) return null
     let hover: InstrumentId | null = null
     let closeHover = false
-    for (const p of points) {
+    const tiles: (InstrumentId | null)[] = []
+    for (const [i, p] of [...hands, ...others].entries()) {
       const hit = hitPicker(open.layout, p)
+      if (i < hands.length) tiles.push(hit.kind === 'tile' ? hit.id : null)
       if (hit.kind === 'tile') hover ??= hit.id
       if (hit.kind === 'close') closeHover = true
     }
     const fresh = hover !== null && hover !== open.hover ? hover : null
-    this.current = { ...open, hover, closeHover }
+    this.current = { ...open, hover, closeHover, armed: this.double.update(t, tiles) }
     return fresh
   }
 }

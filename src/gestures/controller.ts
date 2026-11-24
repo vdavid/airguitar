@@ -22,7 +22,8 @@ import { allows } from './mode.ts'
  * finger, or a mouse button press.
  *
  * What a pinch does is decided once, when it starts (its "intent"), from what's under it:
- * 1. An open picker takes every pinch: a tile picks, the close button or outside closes.
+ * 1. An open picker takes every pinch: two hand pinches on one tile (or a click) pick it
+ *    (`ui/double-pinch.ts`), and one pinch on the close button or outside closes it.
  * 2. Hands only: an HTML control (top bar, dropdown) under the pinch gets pressed.
  * 3. Build and Mixed: an endpoint → grab and move it. Build: drop it on the other end to delete
  *    the string. Mixed: it can't get shorter than `MIN_KEPT_LENGTH`, so it never deletes.
@@ -32,7 +33,7 @@ import { allows } from './mode.ts'
  *    between them; the mouse drags one out. The picker then opens on the new string. Mixed and
  *    Play: nothing.
  *
- * Nothing here depends on timing or holding still.
+ * Apart from the picker's double pinch, nothing here depends on timing or holding still.
  */
 
 export interface Pointer {
@@ -138,6 +139,7 @@ export class GestureController {
   }
 
   pinchEnd(id: string): void {
+    this.host.picker.release(id, this.host.now())
     const intent = this.intents.get(id)
     const pos = this.positions.get(id)
     this.intents.delete(id)
@@ -163,6 +165,7 @@ export class GestureController {
 
   /** The pointer vanished (hand lost): end its gesture without creating anything. */
   cancel(id: string): void {
+    this.host.picker.release(id, this.host.now())
     const intent = this.intents.get(id)
     this.intents.delete(id)
     this.positions.delete(id)
@@ -183,8 +186,11 @@ export class GestureController {
     if (open) {
       const hit = hitPicker(open.layout, p.pos)
       if (hit.kind === 'tile') {
-        this.host.choose(open.target, hit.id)
-        picker.close()
+        // Hands need a double pinch on the same tile; a stray single pinch only arms it.
+        if (p.kind === 'mouse' || picker.pinchTile(p.id, hit.id, this.host.now()) === 'chosen') {
+          this.host.choose(open.target, hit.id)
+          picker.close()
+        }
       } else if (hit.kind !== 'panel') picker.close()
       return { type: 'spent' }
     }

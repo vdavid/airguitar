@@ -22,7 +22,7 @@ const HELP_HTML = `
   <li><b>Its note:</b> every string plays one note, set by its length. Shorter strings sound higher. Notes snap to the key and tone at the top; pick <b>Free</b> for no snapping.</li>
   <li><b>Move an end:</b> pinch an end and drag it. The note follows the new length.</li>
   <li><b>Remove a string:</b> drag one end onto its other end and let go.</li>
-  <li><b>Pick an instrument:</b> pinch the middle of a string, then pinch an instrument. The instrument button at the top sets what new strings play.</li>
+  <li><b>Pick an instrument:</b> pinch the middle of a string, then pinch an instrument twice (a ring shows after the first pinch). With the mouse, one click picks. The instrument button at the top sets what new strings play.</li>
 </ul>
 <h3>Playing</h3>
 <ul>

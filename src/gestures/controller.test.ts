@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import type { Vec } from '../geom.ts'
 import { AppStore } from '../state/app.ts'
 import { StageStore } from '../state/stage.ts'
 import { MIN_KEPT_LENGTH } from '../strings/model.ts'
@@ -10,18 +11,20 @@ function setup(): {
   stage: StageStore
   app: AppStore
   picker: PickerState
+  clock: { t: number }
   spies: { tooShort: ReturnType<typeof vi.fn>; stringMerged: ReturnType<typeof vi.fn> }
 } {
   const spies = { tooShort: vi.fn(), stringMerged: vi.fn() }
   const stage = new StageStore()
   const app = new AppStore()
   const picker = new PickerState()
+  const clock = { t: 0 }
   const host: GestureHost = {
     stage,
     app,
     picker,
     safeTop: () => 60,
-    now: () => 0,
+    now: () => clock.t,
     pressUi: () => false,
     choose: (target, id) => {
       if (target.kind === 'string') stage.setInstrument(target.id, id)
@@ -32,7 +35,7 @@ function setup(): {
     tooShort: spies.tooShort,
     stageFull: vi.fn(),
   }
-  return { ctl: new GestureController(host), stage, app, picker, spies }
+  return { ctl: new GestureController(host), stage, app, picker, clock, spies }
 }
 
 const hand = (id: string, x: number, y: number): Pointer => ({ id, kind: 'hand', pos: { x, y } })
@@ -136,16 +139,60 @@ describe('endpoints', () => {
 })
 
 describe('the instrument picker', () => {
-  it('opens on a string middle and picks with a pinch on a tile', () => {
-    const { ctl, stage, picker } = setup()
-    const s = stage.addString({ x: 100, y: 300 }, { x: 600, y: 300 })
-    ctl.pinchStart(hand('h1', 350, 300))
-    ctl.pinchEnd('h1')
-    expect(picker.open?.target).toEqual({ kind: 'string', id: s?.id })
-    const harp = picker.open?.layout.tiles.find((t) => t.id === 'harp')
-    if (!harp) throw new Error('no harp tile')
-    ctl.pinchStart(hand('h2', harp.x + 40, harp.y + 40))
-    expect(stage.find(s?.id ?? 0)?.instrument).toBe('harp')
+  function openOnString(): ReturnType<typeof setup> & { id: number; tile: (id: string) => Vec } {
+    const env = setup()
+    const s = env.stage.addString({ x: 100, y: 300 }, { x: 600, y: 300 })
+    env.ctl.pinchStart(hand('h1', 350, 300))
+    env.ctl.pinchEnd('h1')
+    expect(env.picker.open?.target).toEqual({ kind: 'string', id: s?.id })
+    const tile = (id: string): Vec => {
+      const r = env.picker.open?.layout.tiles.find((t) => t.id === id)
+      if (!r) throw new Error(`no ${id} tile`)
+      return { x: r.x + 40, y: r.y + 40 }
+    }
+    return { ...env, id: s?.id ?? 0, tile }
+  }
+
+  it('opens on a string middle and picks with two hand pinches on a tile', () => {
+    const { ctl, stage, picker, clock, id, tile } = openOnString()
+    const harp = tile('harp')
+    clock.t = 1
+    ctl.pinchStart(hand('h2', harp.x, harp.y))
+    expect(picker.open?.armed?.tile).toBe('harp')
+    expect(stage.find(id)?.instrument).toBe('guitar')
+    clock.t = 1.15
+    ctl.pinchEnd('h2')
+    clock.t = 1.4
+    ctl.pinchStart(hand('h2', harp.x, harp.y))
+    expect(stage.find(id)?.instrument).toBe('harp')
+    expect(picker.open).toBeNull()
+  })
+
+  it('does not pick on a single hand pinch, or on two pinches on different tiles', () => {
+    const { ctl, stage, picker, clock, id, tile } = openOnString()
+    clock.t = 1
+    ctl.pinchStart(hand('h2', tile('harp').x, tile('harp').y))
+    ctl.pinchEnd('h2')
+    clock.t = 1.4
+    ctl.pinchStart(hand('h2', tile('oud').x, tile('oud').y))
+    ctl.pinchEnd('h2')
+    expect(stage.find(id)?.instrument).toBe('guitar')
+    expect(picker.open?.armed?.tile).toBe('oud')
+  })
+
+  it('picks with a single mouse click', () => {
+    const { ctl, stage, picker, id, tile } = openOnString()
+    const harp = tile('harp')
+    ctl.pinchStart(mouse(harp.x, harp.y))
+    expect(stage.find(id)?.instrument).toBe('harp')
+    expect(picker.open).toBeNull()
+  })
+
+  it('closes on a single hand pinch on the close button', () => {
+    const { ctl, picker } = openOnString()
+    const close = picker.open?.layout.close
+    if (!close) throw new Error('no close button')
+    ctl.pinchStart(hand('h2', close.x, close.y))
     expect(picker.open).toBeNull()
   })
 

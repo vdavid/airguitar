@@ -43,8 +43,21 @@ describe('PickerState', () => {
     const tile = picker.open?.layout.tiles[3]
     if (!tile) throw new Error('no tile')
     const p = { x: tile.x + 30, y: tile.y + 30 }
-    expect(picker.updateHover([p])).toBe('oud')
-    expect(picker.updateHover([p])).toBeNull()
+    expect(picker.updateHover([p], [], 0)).toBe('oud')
+    expect(picker.updateHover([p], [], 0)).toBeNull()
     expect(picker.open).toMatchObject({ hover: 'oud' })
+  })
+
+  it('keeps an arm while only the mouse sits on another tile, and clears it when a hand moves there', () => {
+    const picker = new PickerState()
+    picker.show({ kind: 'new-strings' }, { x: 640, y: 360 }, STAGE, 60, 0)
+    const [a, b] = picker.open?.layout.tiles ?? []
+    if (!a || !b) throw new Error('no tiles')
+    const onB = { x: b.x + 30, y: b.y + 30 }
+    expect(picker.pinchTile('h1', a.id, 1)).toBe('armed')
+    picker.updateHover([], [onB], 1.1)
+    expect(picker.open?.armed?.tile).toBe(a.id)
+    picker.updateHover([onB], [], 1.2)
+    expect(picker.open?.armed).toBeNull()
   })
 })

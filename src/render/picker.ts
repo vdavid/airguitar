@@ -2,14 +2,18 @@ import { INSTRUMENTS, type InstrumentId } from '../audio/instruments/catalog.ts'
 import { clamp } from '../geom.ts'
 import type { OpenPicker } from '../ui/picker.ts'
 import { drawIcon } from './icons.ts'
-import { hexA, INK, IVORY, label, roundRect, TAU } from './style.ts'
+import { AMBER, hexA, INK, IVORY, label, roundRect, TAU } from './style.ts'
 
-/** Draws the instrument palette: icon tiles, the hovered (or current) one named in the header. */
+/**
+ * Draws the instrument palette: icon tiles, the hovered (or current) one named in the header, and a
+ * pulsing ring on the tile a first pinch armed. `hands` adds the "pinch twice" hint.
+ */
 export function drawPicker(
   g: CanvasRenderingContext2D,
   picker: OpenPicker,
   t: number,
   current: InstrumentId | null,
+  hands: boolean,
 ): void {
   const { panel, tiles, close } = picker.layout
   const open = clamp((t - picker.openedAt) / 0.18, 0, 1)
@@ -36,7 +40,11 @@ export function drawPicker(
     drawIcon(g, info.id, info.color, hx + 12, hy, 28)
     label(g, info.name, hx + 34, hy + 1, 17, info.color, 'left', 700, false)
   }
-  label(g, 'CHOOSE AN INSTRUMENT', panel.x + panel.w - 56, hy + 1, 11, 'rgba(243,239,230,0.6)', 'right', 600, false)
+  const right = panel.x + panel.w - 56
+  if (hands) {
+    label(g, 'CHOOSE AN INSTRUMENT', right, hy - 7, 11, 'rgba(243,239,230,0.6)', 'right', 600, false)
+    label(g, 'Pinch twice to choose', right, hy + 10, 12.5, AMBER, 'right', 600, false)
+  } else label(g, 'CHOOSE AN INSTRUMENT', right, hy + 1, 11, 'rgba(243,239,230,0.6)', 'right', 600, false)
 
   // The close button (Music Maker had a countdown ring here; this picker has no timers).
   g.fillStyle = picker.closeHover ? IVORY : 'rgba(255,255,255,0.06)'
@@ -77,5 +85,25 @@ export function drawPicker(
       false,
     )
   }
+  if (picker.armed) drawArmed(g, picker, t)
+  g.restore()
+}
+
+/** The armed tile: an amber ring pulsing outward, twice a second, until the arm clears. */
+function drawArmed(g: CanvasRenderingContext2D, picker: OpenPicker, t: number): void {
+  const armed = picker.armed
+  const tile = armed && picker.layout.tiles.find((x) => x.id === armed.tile)
+  if (!armed || !tile) return
+  const phase = ((t - armed.at) * 2) % 1
+  const grow = 2 + 7 * phase
+  g.save()
+  roundRect(g, tile.x - 2, tile.y - 2, tile.w + 4, tile.h + 4, 13)
+  g.strokeStyle = AMBER
+  g.lineWidth = 3
+  g.stroke()
+  roundRect(g, tile.x - grow, tile.y - grow, tile.w + grow * 2, tile.h + grow * 2, 11 + grow)
+  g.strokeStyle = hexA(AMBER, 0.85 * (1 - phase))
+  g.lineWidth = 2.5
+  g.stroke()
   g.restore()
 }
