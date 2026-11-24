@@ -9,3 +9,7 @@
 .tempo.idle .bpm-value {
   opacity: 0.5;
 }
+
+.dd-value:empty {
+  display: none;
+}

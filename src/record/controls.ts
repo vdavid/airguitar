@@ -2,6 +2,7 @@ import type { AppContext } from '../app.ts'
 import type { BeatPlayer } from '../beats/player.ts'
 import { LANDSCAPE } from '../state/stage.ts'
 import { selectDropdown } from '../ui/dropdown.ts'
+import { createModal, dialogButton, type Modal } from '../ui/modal.ts'
 import { iconButton } from '../ui/topbar.ts'
 import { RECORD_ICON } from './icons.ts'
 import { encodeMp3, MP3_RATES } from './mp3.ts'
@@ -193,14 +194,23 @@ export function mountRecording(ctx: AppContext, beats: BeatPlayer): void {
 
 /** The "Your recording" dialog: a preview, and buttons to save the take in each format. */
 class TakeDialog {
-  private readonly modal = document.createElement('div')
-  private readonly title = document.createElement('h2')
+  private readonly modal: Modal = createModal({ id: 'take-dialog', title: 'Your recording' })
   private readonly video = document.createElement('video')
   private readonly audio = document.createElement('audio')
   private readonly note = document.createElement('p')
-  private readonly saveVideo = document.createElement('button')
-  private readonly saveMp3 = document.createElement('button')
-  private readonly saveWav = document.createElement('button')
+  private readonly saveVideo = dialogButton(
+    'Save video',
+    () => {
+      if (this.take?.video) download(this.take.video, `${this.name}.${this.take.videoExt}`)
+    },
+    { primary: true },
+  )
+  private readonly saveMp3 = dialogButton('Save audio (.mp3)', () => {
+    void this.downloadMp3()
+  })
+  private readonly saveWav = dialogButton('Save audio (.wav)', () => {
+    if (this.wav) download(this.wav, `${this.name}.wav`)
+  })
   private take: Take | null = null
   private name = ''
   private wav: Blob | null = null
@@ -208,41 +218,25 @@ class TakeDialog {
   private urls: string[] = []
 
   constructor() {
-    this.modal.className = 'modal take-modal'
-    this.modal.setAttribute('role', 'dialog')
-    this.modal.setAttribute('aria-modal', 'true')
-    const card = document.createElement('div')
-    card.className = 'card'
+    this.modal.element.classList.add('take-modal')
     this.video.controls = true
     this.video.playsInline = true
     this.audio.controls = true
     this.note.className = 'small'
     const actions = document.createElement('div')
     actions.className = 'actions'
-    for (const b of [this.saveVideo, this.saveMp3, this.saveWav]) b.type = 'button'
-    this.saveVideo.className = 'primary'
-    const close = document.createElement('button')
-    close.type = 'button'
-    close.textContent = 'Close'
-    close.addEventListener('click', () => {
-      this.close()
-    })
-    this.modal.addEventListener('click', (e) => {
-      if (e.target === this.modal) this.close()
-    })
-    this.saveVideo.addEventListener('click', () => {
-      if (this.take?.video) download(this.take.video, `${this.name}.${this.take.videoExt}`)
-    })
-    this.saveWav.addEventListener('click', () => {
-      if (this.wav) download(this.wav, `${this.name}.wav`)
-    })
-    this.saveMp3.addEventListener('click', () => {
-      void this.downloadMp3()
+    const close = dialogButton('Close', () => {
+      this.modal.close()
     })
     actions.append(this.saveVideo, this.saveMp3, this.saveWav, close)
-    card.append(this.title, this.video, this.audio, this.note, actions)
-    this.modal.append(card)
-    document.body.append(this.modal)
+    this.modal.card.append(this.video, this.audio, this.note, actions)
+    // However the dialog closes (button, backdrop, Escape), stop the preview.
+    new MutationObserver(() => {
+      if (!this.modal.isOpen) {
+        this.video.pause()
+        this.audio.pause()
+      }
+    }).observe(this.modal.element, { attributes: true, attributeFilter: ['class'] })
   }
 
   show(take: Take, name: string): void {
@@ -252,7 +246,8 @@ class TakeDialog {
     const frames = take.pcm.reduce((n, c) => n + c.length / 2, 0)
     this.wav = frames > 0 ? new Blob([wavFromPcm16(take.pcm, take.sampleRate)], { type: 'audio/wav' }) : null
     const hasVideo = take.video !== null
-    this.title.textContent = hasVideo ? 'Your recording' : 'Your sound recording'
+    const title = this.modal.card.querySelector('h2')
+    if (title) title.textContent = hasVideo ? 'Your recording' : 'Your sound recording'
     this.video.hidden = !hasVideo
     this.audio.hidden = hasVideo || !this.wav
     this.saveVideo.hidden = !hasVideo
@@ -272,7 +267,7 @@ class TakeDialog {
       : hasVideo && take.videoExt !== 'mp4'
         ? 'This browser records video as WebM. The audio files play everywhere.'
         : ''
-    this.modal.classList.add('open')
+    this.modal.open()
   }
 
   private async downloadMp3(): Promise<void> {
@@ -308,11 +303,5 @@ class TakeDialog {
     for (const u of this.urls) URL.revokeObjectURL(u)
     this.urls = []
     this.mp3 = null
-  }
-
-  private close(): void {
-    this.video.pause()
-    this.audio.pause()
-    this.modal.classList.remove('open')
   }
 }
