@@ -58,7 +58,9 @@ describe('stepEvents', () => {
   it('follows the key: bass on the root, moving with the progression', () => {
     // Bar 0 of a major progression is the I chord: the root, in octave 1 (≤ E3).
     const inC = stepEvents(BEATS.boombap, 0, only('bass'), 0, 'major')
-    expect(inC).toEqual([{ kind: 'note', part: 'bass', instrument: 'bass', midi: 24, velocity: 0.85, delay: 0 }])
+    expect(inC).toEqual([
+      { kind: 'note', part: 'bass', instrument: 'bass', midi: 24, velocity: 0.85, delay: 0, length: 1 },
+    ])
     const inA = stepEvents(BEATS.boombap, 0, only('bass'), 9, 'major')
     expect(inA[0]).toMatchObject({ midi: 33 })
     // Bar 1 is the V chord: G.
@@ -76,6 +78,11 @@ describe('stepEvents', () => {
     // "Free" falls back to major.
     const free = stepEvents(BEATS.boombap, 0, only('chords'), 0, 'free')
     expect(free.map((e) => (e.kind === 'note' ? e.midi : 0))).toEqual([48, 52, 55])
+  })
+
+  it('shortens or lengthens chords per beat, never the bass', () => {
+    const ev = stepEvents(BEATS.boombap, 0, only('bass', 'chords'), 0, 'major')
+    expect(ev.map((e) => (e.kind === 'note' ? e.length : 0))).toEqual([1, 0.6, 0.6, 0.6])
   })
 
   it('adds sevenths where the beat asks for them, and keeps chords at or below E5', () => {

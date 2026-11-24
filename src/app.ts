@@ -1,4 +1,5 @@
 import { AudioEngine } from './audio/engine.ts'
+import { BeatPlayer } from './beats/player.ts'
 import { baseMidi, INSTRUMENTS, type InstrumentId } from './audio/instruments/catalog.ts'
 import { GestureController } from './gestures/controller.ts'
 import type { Vec } from './geom.ts'
@@ -23,6 +24,8 @@ export interface AppContext {
   readonly app: AppStore
   readonly settings: SettingsStore
   readonly audio: AudioEngine
+  /** The backing beat. Its `state.bpm` is the session tempo (the sweep echo follows it). */
+  readonly beats: BeatPlayer
   readonly topBar: TopBar
   readonly gestures: GestureController
   readonly strings: StringPlayer
@@ -53,6 +56,7 @@ export function createApp(canvas: HTMLCanvasElement, top: HTMLElement): AppConte
   const picker = new PickerState()
   const topBar = new TopBar(top)
   const strings = new StringPlayer(stage, audio, effects, now)
+  const beats = new BeatPlayer(audio, stage)
 
   settings.changes.subscribe((s) => {
     audio.setVolume(s.volume)
@@ -146,6 +150,7 @@ export function createApp(canvas: HTMLCanvasElement, top: HTMLElement): AppConte
     app,
     settings,
     audio,
+    beats,
     topBar,
     gestures,
     strings,

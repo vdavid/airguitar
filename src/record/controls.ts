@@ -1,5 +1,4 @@
 import type { AppContext } from '../app.ts'
-import type { BeatPlayer } from '../beats/player.ts'
 import { LANDSCAPE } from '../state/stage.ts'
 import { selectDropdown } from '../ui/dropdown.ts'
 import { createModal, dialogButton, type Modal } from '../ui/modal.ts'
@@ -41,7 +40,7 @@ function download(blob: Blob, name: string): void {
  * the stage shape (landscape or vertical), the record button, and beat stems. A finished take
  * opens a dialog to save it as video (MP4 or WebM), MP3, or WAV.
  */
-export function mountRecording(ctx: AppContext, beats: BeatPlayer): void {
+export function mountRecording(ctx: AppContext): void {
   const canvas = document.getElementById('stage')
   if (!(canvas instanceof HTMLCanvasElement)) throw new Error('Missing #stage')
   const recorder = new Recorder(ctx.audio, ctx.stage, canvas)
@@ -166,7 +165,7 @@ export function mountRecording(ctx: AppContext, beats: BeatPlayer): void {
       const ac = ctx.audio.start().ctx
       rendering = true
       stemsBtn.disabled = true
-      renderStems(beats, {
+      renderStems(ctx.beats, {
         sampleRate: ac.sampleRate,
         volume: ctx.settings.state.volume,
         key: ctx.stage.state.key,

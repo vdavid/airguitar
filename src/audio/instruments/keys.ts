@@ -9,7 +9,7 @@ const keyboard =
   (hammer: boolean): Recipe =>
   (n) => {
     const { ctx, t, f, vel, midi } = n
-    const dur = clamp(3.2 - (midi - 36) * 0.03, 1.2, 3.2)
+    const dur = clamp(3.2 - (midi - 36) * 0.03, 1.2, 3.2) * n.length
     const g = new GainNode(ctx, { gain: 0 })
     const lp = new BiquadFilterNode(ctx, { type: 'lowpass', Q: 0.4 })
     env(lp.frequency, t, [

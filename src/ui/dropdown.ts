@@ -108,6 +108,8 @@ export function selectDropdown<T>(opts: {
   onChange: (value: T) => void
   /** Lay options out in this many columns (e.g. 4 for the 12 keys). */
   columns?: number
+  /** Extra controls under the options (for example, the beat's tempo). Pressing them keeps the panel open. */
+  footer?: HTMLElement
 }): SelectDropdown<T> {
   const b = base(opts)
   if (opts.columns !== undefined) {
@@ -130,6 +132,7 @@ export function selectDropdown<T>(opts: {
     b.panel.append(item)
     return { item, option: o }
   })
+  if (opts.footer) b.panel.append(opts.footer)
   const render = (): void => {
     const sel = opts.options.find((o) => o.value === current)
     setButtonFace(b.button, sel?.icon ?? opts.icon, sel?.short ?? sel?.label ?? '')

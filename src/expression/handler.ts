@@ -7,8 +7,8 @@ import { pullString, SNAP_MIN, snapVelocity, sweepAmounts } from './shapes.ts'
  * The expression gestures (Play mode, offered by the gesture controller):
  * - Pinch a string and pull it sideways: the pitch bends up, more the further you pull. Let go and
  *   it snaps back; a deep enough pull plays the string with a twang as it springs back.
- * - Pinch in empty air and drag: down darkens the whole mix, up thins it, sideways adds echo.
- *   Letting go clears it.
+ * - Pinch in empty air and drag: down darkens the whole mix, up thins it, sideways adds echo (a
+ *   dotted eighth at the beat's tempo). Letting go clears it.
  * Neither depends on timing: how far you pull is all that matters. Only a deliberate let-go snaps a
  * string; a pinch cut short (hand lost, mode switch) just straightens it.
  */
@@ -71,7 +71,7 @@ export function createExpressionHandler(ctx: AppContext): ExpressionHandler {
       if (!o) return
       if (o.type === 'sweep') {
         const a = sweepAmounts(o.from, pos)
-        ctx.audio.setSweep(a.dark, a.thin, a.echo)
+        ctx.audio.setSweep(a.dark, a.thin, a.echo, ctx.beats.state.bpm)
         ctx.effects.sweep = { from: o.from, to: pos, ...a }
         return
       }

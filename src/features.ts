@@ -22,7 +22,8 @@ export function mountFeatures(ctx: AppContext): void {
     },
   })
   mountExpression(ctx)
-  mountRecording(ctx, mountBeats(ctx))
+  mountBeats(ctx)
+  mountRecording(ctx)
   mountSetups(ctx)
   mountHelp(ctx)
   mountSettings(ctx)

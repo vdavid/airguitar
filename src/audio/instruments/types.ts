@@ -27,6 +27,12 @@ export interface NoteRequest {
    * a note plays its natural length.
    */
   readonly held?: boolean
+  /**
+   * Scales the note's natural length (1, the default, is natural). The beats play short chords
+   * with it (Music Maker's `chordLen`). Sustaining instruments hold shorter or longer; struck
+   * keys decay faster or slower. Ignored when `held`.
+   */
+  readonly length?: number
 }
 
 /** A sounding note. Every method is safe to call after the note has died away. */

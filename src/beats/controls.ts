@@ -1,10 +1,9 @@
 import type { AppContext } from '../app.ts'
 import { checklistDropdown, selectDropdown } from '../ui/dropdown.ts'
-import { group, iconButton } from '../ui/topbar.ts'
+import { iconButton } from '../ui/topbar.ts'
 import './beats.css'
 import { BEAT_ICON } from './icons.ts'
 import { BEAT_IDS, BEATS, PART_IDS, type BeatId, type PartId } from './patterns.ts'
-import { BeatPlayer } from './player.ts'
 import { MAX_BPM, MIN_BPM } from './scheduler.ts'
 
 const PART_LABELS: Readonly<Record<PartId, string>> = {
@@ -18,17 +17,46 @@ const PART_LABELS: Readonly<Record<PartId, string>> = {
 type BeatChoice = BeatId | 'off'
 
 /**
- * The beat controls in the top bar (orders 100–199): the beat (incl. off), its parts, and the
- * tempo. Returns the player, so recording can render stems from it.
+ * The beat controls in the top bar (orders 100–199): the beat dropdown (incl. off, with the tempo
+ * at its bottom) and the parts checklist. The player itself is `ctx.beats`.
  */
-export function mountBeats(ctx: AppContext): BeatPlayer {
-  const player = new BeatPlayer(ctx.audio, ctx.stage)
+export function mountBeats(ctx: AppContext): void {
+  const player = ctx.beats
+
+  // Tempo: − value +, inside the beat dropdown's panel.
+  const value = document.createElement('span')
+  value.className = 'bpm-value'
+  const nudge = (d: number): void => {
+    ctx.unlockAudio()
+    player.setBpm(player.state.bpm + d)
+  }
+  const slower = iconButton({
+    icon: BEAT_ICON.minus,
+    label: 'Slower',
+    onClick: () => {
+      nudge(-4)
+    },
+  })
+  const faster = iconButton({
+    icon: BEAT_ICON.plus,
+    label: 'Faster',
+    onClick: () => {
+      nudge(4)
+    },
+  })
+  const tempo = document.createElement('div')
+  tempo.className = 'tempo'
+  const tempoLabel = document.createElement('span')
+  tempoLabel.className = 'tempo-label'
+  tempoLabel.textContent = 'Tempo'
+  tempo.append(tempoLabel, slower, value, faster)
 
   const beat = selectDropdown<BeatChoice>({
     icon: BEAT_ICON.beat,
     label: 'Beat: a backing rhythm in your key',
     options: [{ value: 'off', label: 'Off' }, ...BEAT_IDS.map((id) => ({ value: id, label: BEATS[id].name }))],
     value: 'off',
+    footer: tempo,
     onChange: (v) => {
       ctx.unlockAudio()
       player.setBeat(v === 'off' ? null : v)
@@ -47,40 +75,14 @@ export function mountBeats(ctx: AppContext): BeatPlayer {
   })
   ctx.topBar.mount(parts.element, { slot: 'end', order: 110 })
 
-  const value = document.createElement('span')
-  value.className = 'bpm-value'
-  value.title = 'Tempo in beats per minute'
-  const nudge = (d: number): void => {
-    player.setBpm(player.state.bpm + d)
-  }
-  const slower = iconButton({
-    icon: BEAT_ICON.minus,
-    label: 'Slower',
-    onClick: () => {
-      nudge(-4)
-    },
-  })
-  const faster = iconButton({
-    icon: BEAT_ICON.plus,
-    label: 'Faster',
-    onClick: () => {
-      nudge(4)
-    },
-  })
-  const tempo = group(slower, value, faster)
-  tempo.classList.add('tempo')
-  ctx.topBar.mount(tempo, { slot: 'end', order: 120 })
-
   const render = (): void => {
     const s = player.state
     beat.setValue(s.beat ?? 'off')
-    value.textContent = String(s.bpm)
+    value.textContent = `${s.bpm} BPM`
     slower.disabled = s.bpm <= MIN_BPM
     faster.disabled = s.bpm >= MAX_BPM
-    tempo.classList.toggle('idle', s.beat === null)
     for (const p of PART_IDS) parts.setChecked(p, s.parts.has(p))
   }
   player.changes.subscribe(render)
   render()
-  return player
 }

@@ -34,6 +34,8 @@ export interface BeatPattern {
   readonly chords: readonly string[]
   readonly bassInstrument: InstrumentId
   readonly chordInstrument: InstrumentId
+  /** Chord note length, as a multiple of the instrument's natural length (`NoteRequest.length`). */
+  readonly chordLength: number
   /** Chords add the seventh. */
   readonly seventh?: boolean
   readonly kickAs?: DrumName
@@ -68,6 +70,7 @@ export const BEATS: Readonly<Record<BeatId, BeatPattern>> = {
     bass: ['0-----0---0-----', '0-----0--0-5----'],
     chords: ['x--x------x-----'],
     chordInstrument: 'piano',
+    chordLength: 0.6,
     bassInstrument: 'bass',
   },
   house: {
@@ -82,6 +85,7 @@ export const BEATS: Readonly<Record<BeatId, BeatPattern>> = {
     bass: ['--0--0-0--0--0-8'],
     chords: ['x--x--x---x--x--'],
     chordInstrument: 'epiano',
+    chordLength: 0.35,
     bassInstrument: 'bass',
     snareAs: 'clap',
   },
@@ -97,6 +101,7 @@ export const BEATS: Readonly<Record<BeatId, BeatPattern>> = {
     bass: ['0-------0--5----', '0-------0-----3-'],
     chords: ['x-------x-------'],
     chordInstrument: 'epiano',
+    chordLength: 1.4,
     bassInstrument: 'bass',
     seventh: true,
   },
@@ -112,6 +117,7 @@ export const BEATS: Readonly<Record<BeatId, BeatPattern>> = {
     bass: ['0------0--0-----', '0-----0---0--5--'],
     chords: ['x---------------'],
     chordInstrument: 'bells',
+    chordLength: 1,
     bassInstrument: 'sub',
   },
   dembow: {
@@ -126,6 +132,7 @@ export const BEATS: Readonly<Record<BeatId, BeatPattern>> = {
     bass: ['0-----0-0-----5-'],
     chords: ['x-----x---x-----'],
     chordInstrument: 'guitar',
+    chordLength: 1,
     bassInstrument: 'bass',
   },
   maqsum: {
@@ -140,6 +147,7 @@ export const BEATS: Readonly<Record<BeatId, BeatPattern>> = {
     bass: ['0-------0-----5-'],
     chords: ['x-------------x-'],
     chordInstrument: 'oud',
+    chordLength: 1,
     bassInstrument: 'bass',
     kickAs: 'dum',
     snareAs: 'tak',
@@ -173,6 +181,8 @@ export type BeatEvent =
       readonly velocity: number
       /** Seconds after the step's time (the strum). */
       readonly delay: number
+      /** `NoteRequest.length`: 1 is the natural length. */
+      readonly length: number
     }
 
 /** The MIDI note of scale degree `degree` (may exceed the scale length) of `parent`, in `octave`. */
@@ -239,7 +249,15 @@ function noteEvents(
     if (c !== '-') {
       let midi = scaleDegree(scale, key, 1, degree + (BASS_OFFSETS[c] ?? 0))
       while (midi > BASS_CEILING) midi -= 12
-      out.push({ kind: 'note', part: 'bass', instrument: beat.bassInstrument, midi, velocity: 0.85, delay: 0 })
+      out.push({
+        kind: 'note',
+        part: 'bass',
+        instrument: beat.bassInstrument,
+        midi,
+        velocity: 0.85,
+        delay: 0,
+        length: 1,
+      })
     }
   }
   if (parts.has('chords') && cell(beat.chords, bar, s) !== '-') {
@@ -254,6 +272,7 @@ function noteEvents(
         midi,
         velocity: 0.42,
         delay: i * STRUM_GAP,
+        length: beat.chordLength,
       })
     })
   }

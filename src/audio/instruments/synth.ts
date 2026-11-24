@@ -67,6 +67,8 @@ export interface SynthNote {
   /** Connect the note's sound here. */
   readonly out: AudioNode
   readonly waves: Waves
+  /** The `NoteRequest.length` multiplier (1 = natural). Recipes without `hold` scale their decay by it. */
+  readonly length: number
   /** How long a sustaining note holds before its release: `base` seconds, or until `release()` when held. */
   hold(base: number): number
   /** A pitched oscillator (follows retuning and bends), running from `t` for `dur` seconds. */
@@ -105,6 +107,7 @@ function playSynth(context: InstrumentContext, note: NoteRequest, spec: SynthSpe
   const t = Math.max(note.when ?? ctx.currentTime, ctx.currentTime)
   const rendered = Math.round(fitRange(note.midi, spec.range))
   const held = note.held === true
+  const length = held ? 1 : Math.max(0.1, note.length ?? 1)
   const gate = new GainNode(ctx, { gain: 1 })
   const pan = new StereoPannerNode(ctx, { pan: clamp(note.pan, -1, 1) })
   gate.connect(pan).connect(context.out)
@@ -124,7 +127,8 @@ function playSynth(context: InstrumentContext, note: NoteRequest, spec: SynthSpe
     vel: clamp(note.velocity, 0.05, 1),
     out: gate,
     waves: waves(ctx),
-    hold: (base) => (held ? HELD_MAX : base),
+    length,
+    hold: (base) => (held ? HELD_MAX : base * length),
     osc(type, freq, dur, detune = 0) {
       const o = new OscillatorNode(ctx, { frequency: freq, detune })
       if (type instanceof PeriodicWave) o.setPeriodicWave(type)
@@ -146,8 +150,8 @@ function playSynth(context: InstrumentContext, note: NoteRequest, spec: SynthSpe
       return s
     },
   }
-  const length = spec.recipe(n)
-  const endsAt = t + length + 0.05
+  const lasts = spec.recipe(n)
+  const endsAt = t + lasts + 0.05
 
   let left = sources.length
   for (const s of sources) {

@@ -83,7 +83,7 @@ export class BeatPlayer {
       } else {
         getInstrument(ev.instrument).play(
           { ctx: graph.ctx, out: graph.instrumentBus(ev.instrument, graph.beats), noise: graph.noise },
-          { midi: ev.midi, velocity: ev.velocity, pan: 0, when: t + ev.delay },
+          { midi: ev.midi, velocity: ev.velocity, pan: 0, when: t + ev.delay, length: ev.length },
         )
       }
     }

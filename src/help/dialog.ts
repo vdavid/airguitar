@@ -30,6 +30,12 @@ const HELP_HTML = `
   <li><b>Bend</b> (Play mode): pinch a string and pull it sideways to bend its note up. Let go and it snaps back, and a big pull plays it.</li>
   <li><b>Sweep</b> (Play mode): pinch empty air and drag. Down darkens the sound, up thins it, sideways adds echo. Let go and it clears.</li>
 </ul>
+<h3>Beats and recording</h3>
+<ul>
+  <li><b>Beat</b> (the drum): pick a backing rhythm, or Off. Its bass and chords follow your key and tone. Change the tempo at the bottom of the same menu, and switch parts on or off next to it.</li>
+  <li><b>Record</b> (the red dot): pick video with sound or sound only, then press it to start and again to stop. Save the take as a video, MP3, or WAV.</li>
+  <li><b>Shape:</b> landscape, or vertical for phones. <b>Stems</b> (the layers) saves each beat part as its own WAV, ready for a music editor.</li>
+</ul>
 <h3>Buttons and menus</h3>
 <ul>
   <li>The amber ring between your thumb and index finger is your pointer. Put it on any button and pinch.</li>
