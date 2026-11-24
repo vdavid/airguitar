@@ -2,6 +2,8 @@ import { clamp, dist, type Vec } from '../geom.ts'
 import type { AppStore } from '../state/app.ts'
 import type { StageStore, StageString } from '../state/stage.ts'
 import {
+  CREATE_PULL,
+  CREATE_RADIUS,
   HAND_REACH,
   isMerged,
   keepApart,
@@ -29,9 +31,11 @@ import { allows } from './mode.ts'
  *    the string. Mixed: it can't get shorter than `MIN_KEPT_LENGTH`, so it never deletes.
  * 4. Build: a string's middle → open the instrument picker for it.
  * 5. Mixed and Play: a string's body (middle included) → offered to the expression handler (bend).
- * 6. Empty air. Build: hands pair up (the nearest other waiting hand) and stretch a new string
- *    between them; the mouse drags one out. The picker then opens on the new string. Mixed and
- *    Play: nothing.
+ * 6. Empty air. Build: a hand pinch that starts within `CREATE_RADIUS` of another hand's waiting
+ *    empty-air pinch arms a pair with it (shown as a glow). Pulling the two apart by `CREATE_PULL`
+ *    stretches a new string between them; letting go places it. Pinches that start further apart,
+ *    or that only wander close later, never pair. The mouse drags a string out from anywhere. The
+ *    picker then opens on the new string. Mixed and Play: nothing.
  *
  * Apart from the picker's double pinch, nothing here depends on timing or holding still.
  */
@@ -44,7 +48,12 @@ export interface Pointer {
 
 type Intent =
   | { readonly type: 'drag'; readonly stringId: number; readonly end: 'a' | 'b' }
-  | { readonly type: 'create'; partner: string | null }
+  /**
+   * A hand pinch in empty air (Build). `partner` is the other hand of an armed pair (both sides
+   * point at each other); `armedAt` is how far apart they were when it armed, and `stretched`
+   * latches once they've pulled `CREATE_PULL` beyond that.
+   */
+  | { readonly type: 'create'; partner: string | null; armedAt: number; stretched: boolean }
   | { readonly type: 'create-mouse'; readonly from: Vec }
   | { readonly type: 'expression' }
   /** Does nothing until released (a pinch spent on a UI press, the picker, or a finished string). */
@@ -107,10 +116,22 @@ export class GestureController {
       if (!pos) continue
       if (intent.type === 'create-mouse') {
         out.push({ a: intent.from, b: pos, ok: dist(intent.from, pos) >= MIN_NEW_LENGTH.mouse })
-      } else if (intent.type === 'create' && intent.partner !== null && id < intent.partner) {
+      } else if (intent.type === 'create' && intent.stretched && intent.partner !== null && id < intent.partner) {
         const other = this.positions.get(intent.partner)
         if (other) out.push({ a: pos, b: other, ok: dist(pos, other) >= MIN_NEW_LENGTH.hand })
       }
+    }
+    return out
+  }
+
+  /** Armed pairs that haven't pulled apart yet, for a glow between the two pinches. */
+  armed(): { a: Vec; b: Vec }[] {
+    const out: { a: Vec; b: Vec }[] = []
+    for (const [id, intent] of this.intents) {
+      if (intent.type !== 'create' || intent.stretched || intent.partner === null || id > intent.partner) continue
+      const a = this.positions.get(id)
+      const b = this.positions.get(intent.partner)
+      if (a && b) out.push({ a, b })
     }
     return out
   }
@@ -136,6 +157,7 @@ export class GestureController {
     if (!intent) return
     if (intent.type === 'drag') this.moveEnd(intent.stringId, intent.end, p.pos)
     else if (intent.type === 'expression') this.expression.move(p.id, p.pos)
+    else if (intent.type === 'create') this.checkStretch(intent, p.pos)
   }
 
   pinchEnd(id: string): void {
@@ -219,10 +241,10 @@ export class GestureController {
     return { type: 'spent' }
   }
 
-  /** Pairs a new empty-air hand pinch with the nearest waiting one, if any. */
+  /** Arms a new empty-air hand pinch with the nearest waiting one within `CREATE_RADIUS`, if any. */
   private pairUp(p: Pointer): Intent {
     let partner: string | null = null
-    let best = Infinity
+    let best = CREATE_RADIUS
     for (const [id, intent] of this.intents) {
       if (intent.type !== 'create' || intent.partner !== null) continue
       const pos = this.positions.get(id)
@@ -234,17 +256,37 @@ export class GestureController {
       }
     }
     const partnerIntent = partner === null ? undefined : this.intents.get(partner)
-    if (partnerIntent?.type === 'create') partnerIntent.partner = p.id
-    return { type: 'create', partner }
+    if (partnerIntent?.type !== 'create') return { type: 'create', partner: null, armedAt: 0, stretched: false }
+    partnerIntent.partner = p.id
+    partnerIntent.armedAt = best
+    return { type: 'create', partner, armedAt: best, stretched: false }
+  }
+
+  /** Latches an armed pair as stretched once the hands have pulled apart (both sides). */
+  private checkStretch(intent: Extract<Intent, { type: 'create' }>, pos: Vec): void {
+    if (intent.stretched || intent.partner === null) return
+    const other = this.positions.get(intent.partner)
+    const partnerIntent = this.intents.get(intent.partner)
+    if (!other || partnerIntent?.type !== 'create') return
+    if (dist(pos, other) < intent.armedAt + CREATE_PULL) return
+    intent.stretched = true
+    partnerIntent.stretched = true
   }
 
   private unpair(id: string): void {
     const intent = this.intents.get(id)
-    if (intent?.type === 'create') intent.partner = null
+    if (intent?.type !== 'create') return
+    intent.partner = null
+    intent.stretched = false
   }
 
-  private finishHandCreate(intent: { partner: string | null }, pos: Vec): void {
+  private finishHandCreate(intent: Extract<Intent, { type: 'create' }>, pos: Vec): void {
     if (intent.partner === null) return
+    if (!intent.stretched) {
+      // Let go before pulling apart: no string, and the other hand waits again.
+      this.unpair(intent.partner)
+      return
+    }
     const other = this.positions.get(intent.partner)
     // The partner's pinch is used up: it does nothing more until it opens.
     this.intents.set(intent.partner, { type: 'spent' })

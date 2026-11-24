@@ -235,6 +235,7 @@ function draw(t: number, dt: number, pointing: Vec[]): void {
     video: ctx.app.state.input === 'camera' ? tracker.video : null,
     previews: ctx.gestures.previews(),
     waiting: ctx.gestures.waiting(),
+    armed: ctx.gestures.armed(),
     dragging: ctx.gestures.dragging(),
     hands: handViews,
     pointers: pointing,
@@ -275,11 +276,12 @@ function hint(c: AppContext): string {
     return handsOn ? 'Pinch an instrument twice to pick it. Pinch outside to close.' : 'Click an instrument to pick it.'
   if (c.gestures.previews().length > 0)
     return handsOn ? 'Pull your hands apart, then let go.' : 'Let go to place the string.'
-  if (c.gestures.waiting().length > 0) return 'Now pinch with your other hand too, and pull them apart.'
+  if (c.gestures.armed().length > 0) return 'Now pull your hands apart.'
+  if (c.gestures.waiting().length > 0) return 'Pinch with your other hand right next to this one, then pull them apart.'
   if (c.stage.state.strings.length === 0) {
     if (!build) return 'Switch to Build to make strings.'
     return handsOn
-      ? 'Pinch with both hands, pull them apart, and let go to stretch a string.'
+      ? 'Pinch with both hands close together, pull them apart, and let go to stretch a string.'
       : 'Drag anywhere to draw a string.'
   }
   const plucks = c.strings.plucks

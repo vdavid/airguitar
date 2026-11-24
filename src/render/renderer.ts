@@ -8,7 +8,7 @@ import type { OpenPicker } from '../ui/picker.ts'
 import type { Effects } from './effects.ts'
 import { drawIcon } from './icons.ts'
 import { drawPicker } from './picker.ts'
-import { hexA, IVORY, label, TAU } from './style.ts'
+import { AMBER, hexA, IVORY, label, TAU } from './style.ts'
 
 /**
  * Draws one frame of the stage on the canvas, in stage units (the canvas transform maps them to
@@ -59,6 +59,8 @@ export interface FrameView {
   readonly previews: readonly Preview[]
   /** Hands pinching in empty air, waiting for a partner hand to stretch a string. */
   readonly waiting: readonly Vec[]
+  /** Two hands' pinches armed to make a string (close together, not pulled apart yet). */
+  readonly armed: readonly { readonly a: Vec; readonly b: Vec }[]
   readonly dragging: readonly { stringId: number; end: 'a' | 'b' }[]
   readonly hands: readonly HandView[]
   /** Points that count as "near" for showing labels (fingertips, the mouse). */
@@ -300,6 +302,19 @@ function drawPreviews(g: CanvasRenderingContext2D, f: FrameView): void {
     g.arc(w.x, w.y, 22, 0, TAU)
     g.stroke()
     g.setLineDash([])
+  }
+  // An armed pair: a soft amber glow between the two pinches, so the "close together" step is learnable.
+  for (const p of f.armed) {
+    const mx = (p.a.x + p.b.x) / 2
+    const my = (p.a.y + p.b.y) / 2
+    const r = 26 + Math.hypot(p.b.x - p.a.x, p.b.y - p.a.y) / 2
+    const glow = g.createRadialGradient(mx, my, 0, mx, my, r)
+    glow.addColorStop(0, hexA(AMBER, 0.4 + 0.1 * Math.sin(f.t * 6)))
+    glow.addColorStop(1, hexA(AMBER, 0))
+    g.fillStyle = glow
+    g.beginPath()
+    g.arc(mx, my, r, 0, TAU)
+    g.fill()
   }
 }
 

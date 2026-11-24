@@ -18,7 +18,7 @@ const HELP_HTML = `
 </ul>
 <h3>Making strings</h3>
 <ul>
-  <li><b>Make a string:</b> pinch thumb to index finger on both hands, pull your hands apart, and let go. With the mouse, drag in empty space. The instruments open right away so you can pick one; close them to keep the one shown at the top. Or open <b>Setups</b> for a ready-made stage. The stage holds up to 32 strings.</li>
+  <li><b>Make a string:</b> pinch thumb to index finger on both hands with the pinches touching (a soft glow shows they’re ready), pull your hands apart, and let go. Pinches that start apart don’t make a string. With the mouse, drag in empty space. The instruments open right away so you can pick one; close them to keep the one shown at the top. Or open <b>Setups</b> for a ready-made stage. The stage holds up to 32 strings.</li>
   <li><b>Its note:</b> every string plays one note, set by its length. Shorter strings sound higher. Notes snap to the key and tone at the top; pick <b>Free</b> for no snapping.</li>
   <li><b>Move an end:</b> pinch an end and drag it. The note follows the new length.</li>
   <li><b>Remove a string:</b> drag one end onto its other end and let go.</li>

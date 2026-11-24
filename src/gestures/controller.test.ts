@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Vec } from '../geom.ts'
 import { AppStore } from '../state/app.ts'
 import { StageStore } from '../state/stage.ts'
-import { MIN_KEPT_LENGTH } from '../strings/model.ts'
+import { CREATE_RADIUS, MERGE_RADIUS, MIN_KEPT_LENGTH } from '../strings/model.ts'
 import { PickerState } from '../ui/picker.ts'
 import { GestureController, type GestureHost, type Pointer } from './controller.ts'
 
@@ -42,13 +42,20 @@ const hand = (id: string, x: number, y: number): Pointer => ({ id, kind: 'hand',
 const mouse = (x: number, y: number): Pointer => ({ id: 'mouse', kind: 'mouse', pos: { x, y } })
 
 describe('creating strings', () => {
-  it('stretches a string between two pinching hands', () => {
+  it('uses a creation radius smaller than the delete radius', () => {
+    expect(CREATE_RADIUS).toBeLessThan(MERGE_RADIUS)
+  })
+
+  it('arms two pinches that start close together, and stretches a string once they pull apart', () => {
     const { ctl, stage } = setup()
     ctl.pinchStart(hand('h1', 300, 300))
     expect(ctl.previews()).toHaveLength(0)
     expect(ctl.waiting()).toHaveLength(1)
-    ctl.pinchStart(hand('h2', 320, 300))
+    ctl.pinchStart(hand('h2', 315, 300))
+    expect(ctl.armed()).toEqual([{ a: { x: 300, y: 300 }, b: { x: 315, y: 300 } }])
+    expect(ctl.previews()).toHaveLength(0)
     ctl.pinchMove(hand('h2', 700, 320))
+    expect(ctl.armed()).toHaveLength(0)
     expect(ctl.previews()).toEqual([{ a: { x: 300, y: 300 }, b: { x: 700, y: 320 }, ok: true }])
     ctl.pinchEnd('h1')
     expect(stage.state.strings).toHaveLength(1)
@@ -56,12 +63,69 @@ describe('creating strings', () => {
     expect(stage.state.strings).toHaveLength(1)
   })
 
+  it('creates nothing from two pinches that start far apart', () => {
+    const { ctl, stage } = setup()
+    ctl.pinchStart(hand('h1', 100, 300))
+    ctl.pinchStart(hand('h2', 600, 300))
+    expect(ctl.armed()).toHaveLength(0)
+    expect(ctl.previews()).toHaveLength(0)
+    ctl.pinchMove(hand('h2', 900, 300))
+    ctl.pinchEnd('h1')
+    ctl.pinchEnd('h2')
+    expect(stage.state.strings).toHaveLength(0)
+  })
+
+  it('creates nothing when a far pair moves close, unless both pinch again close together', () => {
+    const { ctl, stage } = setup()
+    ctl.pinchStart(hand('h1', 100, 300))
+    ctl.pinchStart(hand('h2', 600, 300))
+    ctl.pinchMove(hand('h2', 110, 300))
+    expect(ctl.armed()).toHaveLength(0)
+    ctl.pinchMove(hand('h2', 600, 300))
+    ctl.pinchEnd('h1')
+    ctl.pinchEnd('h2')
+    expect(stage.state.strings).toHaveLength(0)
+
+    ctl.pinchStart(hand('h1', 300, 300))
+    ctl.pinchStart(hand('h2', 310, 300))
+    ctl.pinchMove(hand('h2', 700, 300))
+    ctl.pinchEnd('h1')
+    ctl.pinchEnd('h2')
+    expect(stage.state.strings).toHaveLength(1)
+  })
+
+  it('creates nothing when one of the pinches is grabbing an endpoint', () => {
+    const { ctl, stage } = setup()
+    stage.addString({ x: 100, y: 500 }, { x: 600, y: 500 })
+    ctl.pinchStart(hand('h1', 600, 465))
+    expect(ctl.dragging()).toHaveLength(1)
+    ctl.pinchStart(hand('h2', 600, 445))
+    expect(ctl.armed()).toHaveLength(0)
+    ctl.pinchMove(hand('h2', 900, 300))
+    ctl.pinchEnd('h2')
+    ctl.pinchEnd('h1')
+    expect(stage.state.strings).toHaveLength(1)
+  })
+
+  it('creates nothing when an armed pair lets go without pulling apart', () => {
+    const { ctl, stage, spies } = setup()
+    ctl.pinchStart(hand('h1', 300, 300))
+    ctl.pinchStart(hand('h2', 315, 300))
+    ctl.pinchEnd('h1')
+    ctl.pinchEnd('h2')
+    expect(stage.state.strings).toHaveLength(0)
+    expect(spies.tooShort).not.toHaveBeenCalled()
+  })
+
   it('pairs four hands into two strings', () => {
     const { ctl, stage } = setup()
     ctl.pinchStart(hand('a1', 100, 200))
-    ctl.pinchStart(hand('a2', 400, 200))
+    ctl.pinchStart(hand('a2', 110, 200))
     ctl.pinchStart(hand('b1', 100, 500))
-    ctl.pinchStart(hand('b2', 400, 500))
+    ctl.pinchStart(hand('b2', 110, 500))
+    expect(ctl.armed()).toHaveLength(2)
+    ctl.pinchMove(hand('a2', 400, 200))
+    ctl.pinchMove(hand('b2', 400, 500))
     expect(ctl.previews()).toHaveLength(2)
     for (const id of ['a1', 'a2', 'b1', 'b2']) ctl.pinchEnd(id)
     expect(stage.state.strings.map((s) => s.a.y)).toEqual([200, 500])
@@ -70,7 +134,9 @@ describe('creating strings', () => {
   it('does not create a string that is too short', () => {
     const { ctl, stage, spies } = setup()
     ctl.pinchStart(hand('h1', 300, 300))
-    ctl.pinchStart(hand('h2', 330, 300))
+    ctl.pinchStart(hand('h2', 310, 300))
+    ctl.pinchMove(hand('h2', 350, 300))
+    expect(ctl.previews()).toHaveLength(1)
     ctl.pinchEnd('h1')
     expect(stage.state.strings).toHaveLength(0)
     expect(spies.tooShort).toHaveBeenCalled()
@@ -87,8 +153,9 @@ describe('creating strings', () => {
   it('creates nothing in Play mode', () => {
     const { ctl, stage, app } = setup()
     app.setMode('play')
-    ctl.pinchStart(hand('h1', 100, 300))
-    ctl.pinchStart(hand('h2', 600, 300))
+    ctl.pinchStart(hand('h1', 300, 300))
+    ctl.pinchStart(hand('h2', 310, 300))
+    ctl.pinchMove(hand('h2', 600, 300))
     ctl.pinchEnd('h1')
     ctl.pinchStart(mouse(100, 100))
     ctl.pinchMove(mouse(400, 100))
@@ -98,8 +165,9 @@ describe('creating strings', () => {
 
   it('forgets a pairing when a hand is lost', () => {
     const { ctl, stage } = setup()
-    ctl.pinchStart(hand('h1', 100, 300))
-    ctl.pinchStart(hand('h2', 600, 300))
+    ctl.pinchStart(hand('h1', 300, 300))
+    ctl.pinchStart(hand('h2', 310, 300))
+    ctl.pinchMove(hand('h2', 600, 300))
     ctl.cancel('h2')
     expect(ctl.waiting()).toHaveLength(1)
     ctl.pinchEnd('h1')
@@ -276,7 +344,8 @@ describe('the picker on a new string', () => {
   it('opens for a string two hands just made, and closing it keeps the instrument', () => {
     const { ctl, stage, picker } = setup()
     ctl.pinchStart(hand('h1', 300, 300))
-    ctl.pinchStart(hand('h2', 700, 300))
+    ctl.pinchStart(hand('h2', 310, 300))
+    ctl.pinchMove(hand('h2', 700, 300))
     ctl.pinchEnd('h1')
     ctl.pinchEnd('h2')
     expect(picker.open?.target.kind).toBe('string')
@@ -322,8 +391,9 @@ describe('Mixed mode', () => {
   it('creates no strings', () => {
     const { ctl, stage, app } = setup()
     app.setMode('mixed')
-    ctl.pinchStart(hand('h1', 100, 300))
-    ctl.pinchStart(hand('h2', 600, 300))
+    ctl.pinchStart(hand('h1', 300, 300))
+    ctl.pinchStart(hand('h2', 310, 300))
+    ctl.pinchMove(hand('h2', 600, 300))
     ctl.pinchEnd('h1')
     ctl.pinchStart(mouse(100, 100))
     ctl.pinchMove(mouse(400, 100))
