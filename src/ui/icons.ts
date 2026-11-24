@@ -19,6 +19,14 @@ export const ICON = {
   key: svg('<path d="M9 18V5.5l10-2v12.5"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>'),
   /** Tone (scale): rising steps. */
   tone: svg('<path d="M3.5 19h4v-4h4v-4h4V7h5"/>'),
+  /** Setups: a folder. */
+  setups: svg('<path d="M3.5 7.5a2 2 0 0 1 2-2h3.8l2 2.2h7.2a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2Z"/>'),
+  /** Help: a question mark in a circle. */
+  help: svg(
+    '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.9.7c0 1.7-2.5 2.1-2.5 3.7"/><path d="M12 17.1h.01"/>',
+  ),
+  /** Settings: two sliders. */
+  settings: svg('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'),
   close: svg('<path d="M6 6 18 18M18 6 6 18"/>', 18),
   chevron: svg('<path d="m7 10 5 5 5-5"/>', 14),
   check: svg('<path d="m5 12.5 4.5 4.5L19 7.5"/>', 16),

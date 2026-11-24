@@ -1,5 +1,8 @@
 import type { AppContext } from './app.ts'
 import { mountCoreControls } from './ui/core-controls.ts'
+import { mountHelp } from './help/dialog.ts'
+import { mountSettings } from './settings/dialog.ts'
+import { mountSetups } from './setups/dialog.ts'
 
 /**
  * Every feature mounts itself here, one line each, in top bar order. A feature gets the shared
@@ -17,5 +20,7 @@ export function mountFeatures(ctx: AppContext): void {
   })
   // Agent A (instruments, expression gestures): mountExpression(ctx)
   // Agent B (beats, recording, export): mountBeats(ctx), mountRecording(ctx)
-  // Agent C (settings, help, setups): mountSetups(ctx), mountHelp(ctx), mountSettings(ctx)
+  mountSetups(ctx)
+  mountHelp(ctx)
+  mountSettings(ctx)
 }

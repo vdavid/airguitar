@@ -71,7 +71,7 @@ export const STARTERS: readonly Starter[] = [
     key: 9,
     tone: 'pentamin',
     newStringInstrument: 'harp',
-    strings: harpColumn('harp', ['C5', 'D5', 'E5', 'G5', 'A5', 'C6', 'D6', 'E6'], 290, 100, 680),
+    strings: harpColumn('harp', ['C5', 'D5', 'E5', 'G5', 'A5', 'C6', 'D6', 'E6'], 290, 100, 650),
   },
   {
     id: 'bass-guitar',
@@ -109,7 +109,7 @@ export const STARTERS: readonly Starter[] = [
     strings: [
       ...row('oud', ['G3', 'A3', 'D4'], 640, 140, 70),
       ...row('qanun', ['D5', 'Eb5', 'F#5', 'G5', 'A5'], 470, 380, 66),
-      { instrument: 'handdrums', note: note('A4'), at: { x: 1030, y: 680 }, vertical: true, from: 'bottom' },
+      { instrument: 'handdrums', note: note('A4'), at: { x: 1030, y: 650 }, vertical: true, from: 'bottom' },
     ],
   },
   {

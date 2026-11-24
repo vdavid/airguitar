@@ -1,0 +1,166 @@
+/* Settings, help, and setups dialogs (Music Maker's look). The `.modal` and `.card` basics are in style.css. */
+
+.card.wide {
+  width: min(780px, 100%);
+}
+
+.card ul {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  line-height: 1.6;
+  color: var(--mute);
+}
+
+.card li {
+  margin-bottom: 4px;
+}
+
+.card li b {
+  color: var(--text);
+}
+
+/* Settings rows: label on the left, control on the right. */
+.set {
+  display: grid;
+  grid-template-columns: 1fr 230px;
+  gap: 12px 16px;
+  align-items: center;
+}
+
+.set label,
+.set .label {
+  color: var(--text);
+}
+
+.set small {
+  display: block;
+  color: var(--mute);
+  font-size: 12px;
+}
+
+input[type='range'] {
+  width: 100%;
+  accent-color: var(--amber);
+}
+
+/* A slider with − and + buttons, so a pinch can change it too. */
+.stepper {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  gap: 8px;
+  align-items: center;
+}
+
+/* On/off switch, a real button so hands can press it. */
+button.switch {
+  width: 58px;
+  height: 34px;
+  padding: 3px;
+  border-radius: 999px;
+  justify-self: start;
+  justify-content: flex-start;
+}
+
+button.switch::after {
+  content: '';
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--mute);
+  transition: transform 0.15s;
+}
+
+button.switch[aria-checked='true'] {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+button.switch[aria-checked='true']::after {
+  background: var(--ink);
+  transform: translateX(24px);
+}
+
+/* Setups */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+button.tile {
+  height: auto;
+  min-height: 64px;
+  padding: 10px 14px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  white-space: normal;
+  text-align: left;
+}
+
+button.tile b {
+  font-size: 15px;
+}
+
+button.tile span {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--mute);
+  line-height: 1.35;
+}
+
+.mrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mrow .grow {
+  flex: 1;
+  min-width: 0;
+}
+
+.mrow small {
+  display: block;
+  color: var(--mute);
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.saverow {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 10px;
+  flex-wrap: wrap;
+}
+
+.card input[type='text'] {
+  flex: 1;
+  min-width: 180px;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font: inherit;
+}
+
+.card input[type='text']:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 1px;
+}
+
+.card .hidden-input {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .set {
+    grid-template-columns: 1fr;
+  }
+}

@@ -27,6 +27,7 @@ A browser instrument: stretch strings in the air with your hands (webcam + Media
 - `src/audio/`: `engine.ts` (the live context), `graph.ts` (the mix graph, buildable on an offline context too), `reverb.ts`, `instruments/` (catalog, registry, Karplus–Strong).
 - `src/render/`: `renderer.ts` (the stage), `picker.ts` (the palette), `icons.ts` (the 24 instrument icons, to canvas and to SVG), `effects.ts` (particles, note pops, ripples), `style.ts`.
 - `src/ui/`: `topbar.ts`, `dropdown.ts`, `icons.ts` (top bar SVGs), `core-controls.ts` (brand, Build/Play, key, tone, new-string instrument), `picker.ts` (picker layout and state), `hand-press.ts` (hands pressing HTML buttons), `messages.ts` (hint, toast), `style.css` (Music Maker's palette and fonts).
+- `src/settings/` (Settings dialog, persistence), `src/help/` (How to play), `src/setups/` (Setups dialog, named setups in localStorage, files, `starters.ts`: ready-made layouts cut to exact lengths per note). Shared bits: `ui/modal.ts` + `ui/dialogs.css` (dialogs; hands pinching the backdrop close them, pinches never fall through to the stage), `ui/storage.ts` (localStorage that never throws).
 - MediaPipe's WebAssembly is served from our origin (`/mediapipe/`, a small plugin in `vite.config.ts`); the hand model loads from Google's model storage.
 
 ## Seams (for parallel feature work)
