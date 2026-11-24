@@ -1,0 +1,48 @@
+name: Check and deploy
+
+# Every push and PR runs the checker (format, lint, types, tests, build, Go). A push to `main`
+# also deploys to airguitar.veszelovszki.com with wrangler.
+#
+# Secrets: CLOUDFLARE_API_TOKEN (same token as `secret CLOUDFLARE_API_TOKEN`; needs Workers
+# Scripts Edit and Workers Routes Edit) and CLOUDFLARE_ACCOUNT_ID.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # Run JavaScript actions on Node 24 (Node 20 is deprecated on the runners).
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+jobs:
+  check-and-deploy:
+    name: Check, build, and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Node, pnpm, and Go (versions from mise.toml)
+        uses: jdx/mise-action@9b200bcecbfd6303e69a4a261b2e09e3757440a7 # v5.2.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Checks
+        run: ./scripts/check.sh --ci
+
+      - name: Deploy
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        run: pnpm exec wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
