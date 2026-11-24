@@ -26,6 +26,15 @@ export interface Ripple {
   readonly t: number
 }
 
+/** The air sweep in progress: where the pinch started, where it is, and the amounts (0..1). */
+export interface SweepView {
+  readonly from: Vec
+  readonly to: Vec
+  readonly dark: number
+  readonly thin: number
+  readonly echo: number
+}
+
 const MAX_PARTICLES = 600
 const MAX_POPS = 32
 
@@ -33,6 +42,8 @@ export class Effects {
   readonly particles: Particle[] = []
   pops: Pop[] = []
   ripples: Ripple[] = []
+  /** Set while a pinch sweeps the filter and echo in empty air (Play mode). */
+  sweep: SweepView | null = null
 
   /** A spray of sparks from `p`. */
   burst(p: Vec, color: string, count: number, speed: number): void {

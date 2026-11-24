@@ -1,4 +1,5 @@
 import type { AppContext } from './app.ts'
+import { mountExpression } from './expression/handler.ts'
 import { mountCoreControls } from './ui/core-controls.ts'
 import { mountHelp } from './help/dialog.ts'
 import { mountSettings } from './settings/dialog.ts'
@@ -18,7 +19,7 @@ export function mountFeatures(ctx: AppContext): void {
       ctx.openPicker({ kind: 'new-strings' })
     },
   })
-  // Agent A (instruments, expression gestures): mountExpression(ctx)
+  mountExpression(ctx)
   // Agent B (beats, recording, export): mountBeats(ctx), mountRecording(ctx)
   mountSetups(ctx)
   mountHelp(ctx)

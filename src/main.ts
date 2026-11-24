@@ -179,6 +179,7 @@ function step(t: number, dt: number): void {
     if (dets) hands.update(dets, t, sens, handEvents)
   }
   if (input !== 'idle' && !ctx.picker.open) pluckAll(t)
+  ctx.strings.update(t)
   const pointing = point(t)
   setHint(hint(ctx))
   draw(t, dt, pointing)
